@@ -76,7 +76,7 @@ export const customerApi = {
 
   getAddresses: () => axiosInstance.get("/quick-commerce/addresses", withQuickSession()),
   addAddress: (data) => axiosInstance.post("/quick-commerce/addresses", data, withQuickSession()),
-  updateAddress: (id, data) => axiosInstance.put(`/quick-commerce/addresses/${id}`, data, withQuickSession()),
+  updateAddress: (id, data) => axiosInstance.patch(`/quick-commerce/addresses/${id}`, data, withQuickSession()),
   deleteAddress: (id) => axiosInstance.delete(`/quick-commerce/addresses/${id}`, withQuickSession()),
 
   getStores: (params) => quickGetWithDedupe("/quick-commerce/stores", params),

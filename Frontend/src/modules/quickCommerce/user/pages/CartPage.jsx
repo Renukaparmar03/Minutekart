@@ -28,6 +28,7 @@ import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { useProfile } from "@food/context/ProfileContext";
 import { useAuth } from "@core/context/AuthContext";
+import { useLocation as useGeoLocation } from "../context/LocationContext";
 import ProductCard from "../components/shared/ProductCard";
 import { customerApi } from "../services/customerApi";
 import emptyBoxAnimation from "../assets/lottie/Empty box.json";
@@ -127,8 +128,10 @@ const CartPage = () => {
     addresses: profileAddresses,
   } = useProfile();
   const { user, isAuthenticated } = useAuth();
+  const { refreshLocation } = useGeoLocation();
 
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [isFetchingLocation, setIsFetchingLocation] = useState(false);
   const [coupons, setCoupons] = useState([]);
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
@@ -140,6 +143,35 @@ const CartPage = () => {
   const [recipientPhone, setRecipientPhone] = useState("");
   const [recipientName, setRecipientName] = useState("");
   const [recipientError, setRecipientError] = useState("");
+
+  const handleUseCurrentLocation = async () => {
+    setIsFetchingLocation(true);
+    try {
+      showToast("Fetching current location...", "info");
+      const loc = await refreshLocation();
+      if (!loc || loc.error) {
+        showToast("Could not get location. Please enable GPS.", "error");
+        return;
+      }
+      
+      const tempAddr = {
+        id: "temp-" + Date.now(),
+        label: "Current Location",
+        street: loc.name || loc.address || "Unknown Location",
+        city: loc.city || "Unknown City",
+        state: loc.state || "Unknown State",
+        zipCode: loc.pincode || loc.postalCode || "",
+        location: { lat: loc.latitude, lng: loc.longitude },
+      };
+      
+      setSelectedAddress(tempAddr);
+      showToast("Current location selected", "success");
+    } catch (e) {
+      showToast("Error getting location", "error");
+    } finally {
+      setIsFetchingLocation(false);
+    }
+  };
 
   const handleMoveToWishlist = async (item) => {
     try {
@@ -889,16 +921,36 @@ const CartPage = () => {
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 {selectedAddress.street || selectedAddress.address}, {selectedAddress.city} - {selectedAddress.zipCode || selectedAddress.postalCode}
               </p>
+              <div className="mt-3">
+                <button
+                  onClick={handleUseCurrentLocation}
+                  disabled={isFetchingLocation}
+                  className="flex items-center justify-center w-full py-2 gap-2 text-xs font-bold text-[#0c831f] bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <MapPin size={14} />
+                  {isFetchingLocation ? "Fetching Location..." : "Use Current Location"}
+                </button>
+              </div>
             </div>
           ) : (
             <div className="text-center py-4">
               <p className="text-xs text-slate-500">No saved addresses found.</p>
-              <button
-                onClick={() => navigate("/quick/addresses")}
-                className="mt-2 text-xs font-bold text-[#0c831f] hover:underline cursor-pointer bg-transparent border-0"
-              >
-                + Add Address
-              </button>
+              <div className="flex flex-col gap-2 mt-3">
+                <button
+                  onClick={() => navigate("/quick/addresses")}
+                  className="w-full py-2.5 text-xs font-bold text-white bg-[#0c831f] rounded-xl hover:bg-[#0a6c19] transition-colors"
+                >
+                  + Add Address
+                </button>
+                <button
+                  onClick={handleUseCurrentLocation}
+                  disabled={isFetchingLocation}
+                  className="flex items-center justify-center w-full py-2.5 gap-2 text-xs font-bold text-[#0c831f] bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <MapPin size={14} />
+                  {isFetchingLocation ? "Fetching Location..." : "Use Current Location"}
+                </button>
+              </div>
             </div>
           )}
         </section>

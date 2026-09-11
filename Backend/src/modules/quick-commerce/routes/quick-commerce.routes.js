@@ -120,6 +120,14 @@ import {
   reverseGeocode,
 } from "../controllers/location.controller.js";
 
+import {
+    listAddressesController,
+    addAddressController,
+    updateAddressController,
+    deleteAddressController,
+    setDefaultAddressController
+} from "../../food/user/controllers/userAddress.controller.js";
+
 import { authMiddleware } from "../../../core/auth/auth.middleware.js";
 import { requireRoles } from "../../../core/roles/role.middleware.js";
 import { verifyAccessToken } from "../../../core/auth/token.util.js";
@@ -168,6 +176,13 @@ router.get("/billing/settings", getPublicBillingSettings);
 // Location endpoints
 router.get("/location/geocode", geocodeAddress);
 router.get("/location/reverse-geocode", reverseGeocode);
+
+// Address endpoints
+router.get("/addresses", authMiddleware, listAddressesController);
+router.post("/addresses", authMiddleware, addAddressController);
+router.patch("/addresses/:addressId", authMiddleware, updateAddressController);
+router.delete("/addresses/:addressId", authMiddleware, deleteAddressController);
+router.patch("/addresses/:addressId/default", authMiddleware, setDefaultAddressController);
 
 router.get("/cart", optionalAuth, getCart);
 router.post("/cart/add", optionalAuth, addToCart);

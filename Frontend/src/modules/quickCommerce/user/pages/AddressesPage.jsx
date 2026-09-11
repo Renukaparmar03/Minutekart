@@ -39,11 +39,11 @@ const AddressesPage = () => {
                 id: addr._id ?? idx,
                 type: (addr.label || 'home').charAt(0).toUpperCase() + (addr.label || 'home').slice(1),
                 name: profile?.name ?? '',
-                address: addr.fullAddress || [addr.landmark, addr.city, addr.state, addr.pincode].filter(Boolean).join(', ') || '',
+                address: addr.street || addr.fullAddress || [addr.landmark || addr.additionalDetails, addr.city, addr.state, addr.pincode || addr.zipCode].filter(Boolean).join(', ') || '',
                 city: addr.city,
                 state: addr.state,
-                pincode: addr.pincode,
-                phone: profile?.phone ?? '',
+                pincode: addr.zipCode || addr.pincode,
+                phone: addr.phone || profile?.phone || '',
                 isDefault: idx === 0
             })));
         } catch {
@@ -109,13 +109,17 @@ const AddressesPage = () => {
             toast.error('Please enter the address');
             return;
         }
+        const formattedLabel = addForm.type ? addForm.type.charAt(0).toUpperCase() + addForm.type.slice(1).toLowerCase() : 'Home';
         const newAddr = {
-            label: addForm.type.toLowerCase(),
-            fullAddress: address,
-            ...(landmark && { landmark }),
-            ...(city && { city }),
-            ...(state && { state }),
-            ...(pincode && { pincode })
+            label: ['Home', 'Office', 'Other'].includes(formattedLabel) ? formattedLabel : 'Other',
+            street: address,
+            additionalDetails: landmark || '',
+            city: city || 'Unknown',
+            state: state || 'Unknown',
+            zipCode: pincode || '',
+            phone: addForm.phone?.trim() || '',
+            latitude: 0,
+            longitude: 0
         };
         setSaving(true);
         try {
@@ -126,9 +130,8 @@ const AddressesPage = () => {
                 const geo = await customerApi.geocodeAddress(query);
                 const loc = geo.data?.result?.location;
                 if (loc && typeof loc.lat === 'number' && typeof loc.lng === 'number') {
-                    newAddr.location = { lat: loc.lat, lng: loc.lng };
-                    if (geo.data?.result?.placeId) newAddr.placeId = geo.data.result.placeId;
-                    if (geo.data?.result?.formattedAddress) newAddr.formattedAddress = geo.data.result.formattedAddress;
+                    newAddr.latitude = loc.lat;
+                    newAddr.longitude = loc.lng;
                 }
             } catch (e) {
                 toast.error(
@@ -137,11 +140,7 @@ const AddressesPage = () => {
                 );
             }
 
-            await customerApi.updateProfile({
-                ...(name && { name }),
-                ...(addForm.phone && { phone: addForm.phone.trim() }),
-                addresses: [...rawAddresses, newAddr]
-            });
+            await customerApi.addAddress(newAddr);
             toast.success('Address saved successfully');
             setIsAddOpen(false);
             setLoading(true);
@@ -193,14 +192,17 @@ const AddressesPage = () => {
             setIsEditOpen(false);
             return;
         }
-        const updatedRaw = {
-            ...(rawAddresses[idx] && typeof rawAddresses[idx] === 'object' ? rawAddresses[idx] : {}),
-            label: editForm.type.toLowerCase(),
-            fullAddress: address,
-            ...(editForm.landmark?.trim() && { landmark: editForm.landmark.trim() }),
-            ...(editForm.city?.trim() && { city: editForm.city.trim() }),
-            ...(editForm.state?.trim() && { state: editForm.state.trim() }),
-            ...(editForm.pincode?.trim() && { pincode: editForm.pincode.trim() })
+        const formattedLabel = editForm.type ? editForm.type.charAt(0).toUpperCase() + editForm.type.slice(1).toLowerCase() : 'Home';
+        const updatedAddr = {
+            label: ['Home', 'Office', 'Other'].includes(formattedLabel) ? formattedLabel : 'Other',
+            street: address,
+            additionalDetails: editForm.landmark?.trim() || '',
+            city: editForm.city?.trim() || 'Unknown',
+            state: editForm.state?.trim() || 'Unknown',
+            zipCode: editForm.pincode?.trim() || '',
+            phone: editForm.phone?.trim() || '',
+            latitude: rawAddresses[idx]?.location?.coordinates?.[1] || 0,
+            longitude: rawAddresses[idx]?.location?.coordinates?.[0] || 0
         };
 
         // Best-effort: refresh coordinates + placeId whenever address fields change.
@@ -215,9 +217,8 @@ const AddressesPage = () => {
             const geo = await customerApi.geocodeAddress(query);
             const loc = geo.data?.result?.location;
             if (loc && typeof loc.lat === 'number' && typeof loc.lng === 'number') {
-                updatedRaw.location = { lat: loc.lat, lng: loc.lng };
-                if (geo.data?.result?.placeId) updatedRaw.placeId = geo.data.result.placeId;
-                if (geo.data?.result?.formattedAddress) updatedRaw.formattedAddress = geo.data.result.formattedAddress;
+                updatedAddr.latitude = loc.lat;
+                updatedAddr.longitude = loc.lng;
             }
         } catch (e) {
             toast.error(
@@ -226,14 +227,9 @@ const AddressesPage = () => {
             );
         }
 
-        const updatedAddresses = rawAddresses.map((raw, i) => (i === idx ? updatedRaw : raw));
         setUpdating(true);
         try {
-            await customerApi.updateProfile({
-                ...(editForm.name?.trim() && { name: editForm.name.trim() }),
-                ...(editForm.phone?.trim() && { phone: editForm.phone.trim() }),
-                addresses: updatedAddresses
-            });
+            await customerApi.updateAddress(selectedAddress.id, updatedAddr);
             toast.success('Address updated successfully');
             setIsEditOpen(false);
             setSelectedAddress(null);
@@ -261,10 +257,9 @@ const AddressesPage = () => {
             setIsDeleteOpen(false);
             return;
         }
-        const updatedAddresses = rawAddresses.filter((_, i) => i !== idx);
         setDeleting(true);
         try {
-            await customerApi.updateProfile({ addresses: updatedAddresses });
+            await customerApi.deleteAddress(selectedAddress.id);
             toast.success('Address deleted successfully');
             setIsDeleteOpen(false);
             setSelectedAddress(null);
