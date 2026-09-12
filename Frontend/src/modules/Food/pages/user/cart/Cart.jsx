@@ -1096,11 +1096,11 @@ export default function Cart() {
         const response = await adminAPI.getPublicFeeSettings()
         if (response.data.success && response.data.data.feeSettings) {
           setFeeSettings({
-            deliveryFee: response.data.data.feeSettings.deliveryFee || 25,
+            deliveryFee: response.data.data.feeSettings.deliveryFee ?? 25,
             deliveryFeeRanges: response.data.data.feeSettings.deliveryFeeRanges || [],
-            freeDeliveryThreshold: response.data.data.feeSettings.freeDeliveryThreshold || 149,
-            platformFee: response.data.data.feeSettings.platformFee || 5,
-            gstRate: response.data.data.feeSettings.gstRate || 5,
+            freeDeliveryThreshold: response.data.data.feeSettings.freeDeliveryThreshold ?? 149,
+            platformFee: response.data.data.feeSettings.platformFee ?? 5,
+            gstRate: response.data.data.feeSettings.gstRate ?? 5,
           })
         }
       } catch (error) {
@@ -1163,9 +1163,9 @@ export default function Cart() {
   const deliveryFeeBreakdownText = hasDistanceDeliveryBreakdown
     ? `Distance ${Number(deliveryFeeBreakdown.distanceKm).toFixed(1)} km: ${RUPEE_SYMBOL}${Number(deliveryFeeBreakdown.basePayout || 0).toFixed(0)} base + ${Number(deliveryFeeBreakdown.extraDistanceKm || 0).toFixed(1)} km x ${RUPEE_SYMBOL}${Number(deliveryFeeBreakdown.commissionPerKm || 0).toFixed(0)}`
     : null
-  const platformFee = pricing?.platformFee || feeSettings.platformFee
-  const gstCharges = pricing?.tax || Math.round(subtotal * (feeSettings.gstRate / 100))
-  const discount = pricing?.discount || (appliedCoupon ? Math.min(appliedCoupon.discount, subtotal * 0.5) : 0)
+  const platformFee = pricing?.platformFee ?? feeSettings.platformFee
+  const gstCharges = pricing?.tax ?? Math.round(subtotal * (feeSettings.gstRate / 100))
+  const discount = pricing?.discount ?? (appliedCoupon ? Math.min(appliedCoupon.discount, subtotal * 0.5) : 0)
   const totalBeforeDiscount = subtotal + deliveryFee + platformFee + gstCharges
   const total = pricing?.total || (totalBeforeDiscount - discount)
   const savings = pricing?.savings ?? Math.max(0, totalBeforeDiscount - total)

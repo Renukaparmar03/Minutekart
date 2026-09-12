@@ -127,8 +127,8 @@ function getAccessToken(config) {
       if (customerToken) return customerToken;
     }
 
-    // 3. Fallback to generic token only for non-admin modules
-    if (module !== "admin") {
+    // 3. Fallback to generic token only for endpoints that do not have a specific module
+    if (!["admin", "user", "restaurant", "delivery"].includes(module)) {
       return localStorage.getItem("accessToken") || null;
     }
     return null;

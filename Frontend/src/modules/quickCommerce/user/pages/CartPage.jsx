@@ -54,7 +54,7 @@ const calculateQuickCartPricing = ({
   categoryFeeMap = {},
 }) => {
   const safeSubtotal = Number(subtotal || 0);
-  const freeThreshold = Number(feeSettings?.freeDeliveryThreshold || 0);
+  const freeThreshold = Number(feeSettings?.freeDeliveryThreshold ?? 0);
   const ranges = Array.isArray(feeSettings?.deliveryFeeRanges)
     ? [...feeSettings.deliveryFeeRanges].sort((a, b) => Number(a.min) - Number(b.min))
     : [];
@@ -83,9 +83,9 @@ const calculateQuickCartPricing = ({
     }
     deliveryFee = Number.isFinite(matchedFee)
       ? matchedFee
-      : Number(feeSettings?.deliveryFee || 0);
+      : Number(feeSettings?.deliveryFee ?? 0);
   } else {
-    deliveryFee = Number(feeSettings?.deliveryFee || 0);
+    deliveryFee = Number(feeSettings?.deliveryFee ?? 0);
   }
 
   const handlingFee = cartItems.reduce((maxFee, item) => {
@@ -99,8 +99,8 @@ const calculateQuickCartPricing = ({
     }, 0);
     return Math.max(maxFee, itemFee);
   }, 0);
-  const platformFee = Number(feeSettings?.platformFee || 0);
-  const gstRate = Number(feeSettings?.gstRate || 0);
+  const platformFee = Number(feeSettings?.platformFee ?? 0);
+  const gstRate = Number(feeSettings?.gstRate ?? 0);
   const gstAmount =
     Number.isFinite(gstRate) && gstRate > 0
       ? Math.round(safeSubtotal * (gstRate / 100))

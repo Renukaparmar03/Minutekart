@@ -41,10 +41,8 @@ const OfferSectionsManagement = () => {
   const loadCategories = async () => {
     try {
       const res = await adminApi.getCategories();
-      const list = res.data.results || res.data.result || [];
-      const cats = (Array.isArray(list) ? list : []).filter(
-        (c) => c.type === "category"
-      );
+      const list = res.data.results || res.data.result?.items || res.data.result || [];
+      const cats = Array.isArray(list) ? list : [];
       setCategories(cats);
     } catch (e) {
       console.error(e);
@@ -55,7 +53,7 @@ const OfferSectionsManagement = () => {
   const loadSellers = async () => {
     try {
       const res = await adminApi.getSellers();
-      const list = res.data.results || res.data.result || res.data;
+      const list = res.data.results || res.data.result?.items || res.data.result || res.data;
       setSellers(Array.isArray(list) ? list : []);
     } catch (e) {
       console.error(e);
