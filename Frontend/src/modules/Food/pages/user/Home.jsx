@@ -847,7 +847,7 @@ export default function Home() {
             {(banners.loading || (banners?.images?.length > 0)) && (
               <Suspense fallback={<HeroBannerSkeleton className="h-full w-full px-4 mt-3" />}>
                 <section className="content-auto px-4 pt-3 sm:pt-4 lg:pt-5">
-                  <div className="overflow-hidden rounded-[22px] border border-slate-100 bg-white shadow-[0_18px_40px_-24px_rgba(15,23,42,0.3)] h-48 sm:h-56 md:h-64 lg:h-72">
+                  <div className="overflow-hidden rounded-[22px] border border-slate-100 bg-white shadow-[0_18px_40px_-24px_rgba(15,23,42,0.3)] w-full aspect-video">
                     <BannerSection
                       showBannerSkeleton={banners.loading}
                       heroBannerImages={banners.images}
@@ -865,14 +865,14 @@ export default function Home() {
 
 
 
-            <Suspense fallback={null}>
+            {/* <Suspense fallback={null}>
               <ExploreMoreSection
                 exploreMoreHeading={landing.heading}
                 showExploreSkeleton={landing.loading}
                 finalExploreItems={finalExploreItemsFiltered}
                 backendOrigin={BACKEND_ORIGIN}
               />
-            </Suspense>
+            </Suspense> */}
 
             {/* Hiding Custom Cake card as requested
             <div className="px-4 py-4 md:py-6 mt-2 mx-auto max-w-7xl">

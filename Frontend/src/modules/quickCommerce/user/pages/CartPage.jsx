@@ -607,7 +607,7 @@ const CartPage = () => {
   if (loading && cart.length === 0) {
     return (
       <div className="min-h-screen bg-[#f7f7f7] dark:bg-neutral-950 px-4 py-6">
-        <div className="mx-auto flex max-w-md flex-col items-center justify-center rounded-[28px] bg-white dark:bg-neutral-900 px-6 py-16 text-center shadow-sm">
+        <div className="mx-auto flex max-w-md flex-col items-center justify-center rounded-2xl bg-white dark:bg-neutral-900 px-6 py-16 text-center shadow-sm">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 dark:border-neutral-700 border-t-[#0c831f] dark:border-t-[#0ea5e9]" />
           <h2 className="mt-5 text-xl font-bold text-slate-900 dark:text-white">Loading your cart</h2>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Pulling in your saved items...</p>
@@ -634,7 +634,7 @@ const CartPage = () => {
             </div>
           </div>
 
-          <div className="rounded-[28px] bg-white dark:bg-neutral-900 px-6 py-10 text-center shadow-sm border border-transparent dark:border-neutral-800">
+          <div className="rounded-2xl bg-white dark:bg-neutral-900 px-6 py-10 text-center shadow-sm border border-transparent dark:border-neutral-800">
             <div className="mx-auto mb-6 flex h-44 w-44 items-center justify-center">
               <Lottie animationData={emptyBoxAnimation} loop className="h-40 w-40" />
             </div>
@@ -654,7 +654,7 @@ const CartPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] dark:bg-neutral-950 pb-[calc(9rem+env(safe-area-inset-bottom))]">
+    <div className="min-h-screen bg-slate-50 dark:bg-neutral-950 pb-[calc(9rem+env(safe-area-inset-bottom))]">
       {/* Sticky Full-width Header */}
       <header className="sticky top-0 z-[500] bg-white dark:bg-neutral-900 border-b border-slate-100 dark:border-neutral-800 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
         <div className="mx-auto max-w-3xl px-4 py-3 flex items-center justify-between">
@@ -701,7 +701,7 @@ const CartPage = () => {
               className="absolute inset-0 bg-black/40 backdrop-blur-sm"
               onClick={() => setShowClearConfirm(false)}
             />
-            <div className="relative z-10 w-full max-w-sm rounded-[28px] bg-white dark:bg-neutral-900 p-6 shadow-2xl border border-transparent dark:border-neutral-800">
+            <div className="relative z-10 w-full max-w-sm rounded-2xl bg-white dark:bg-neutral-900 p-6 shadow-2xl border border-transparent dark:border-neutral-800">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 dark:bg-rose-900/20 mx-auto">
                 <Trash2 size={22} className="text-rose-500 dark:text-rose-400" />
               </div>
@@ -728,7 +728,7 @@ const CartPage = () => {
         )}
 
         {/* Grouped Delivery + Products Card */}
-        <section className="mb-4 rounded-[28px] bg-white dark:bg-neutral-900 shadow-sm border border-slate-100 dark:border-neutral-800 overflow-hidden">
+        <section className="mb-4 rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-slate-100 dark:border-neutral-800 overflow-hidden">
           {/* Grouped Delivery Header */}
           <div className="p-4 flex items-center gap-4 bg-slate-50/50 dark:bg-neutral-850 border-b border-slate-100 dark:border-neutral-800">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#e9f7ec] dark:bg-emerald-950 text-[#0c831f] dark:text-emerald-400 border border-[#c6f0d3] dark:border-emerald-800/30">
@@ -839,7 +839,7 @@ const CartPage = () => {
 
         {/* You might also like section */}
         {!similarLoading && similarProducts.length > 0 && (
-          <section className="mt-4 rounded-[24px] bg-white dark:bg-neutral-900 p-5 shadow-sm border border-transparent dark:border-neutral-800">
+          <section className="mt-4 rounded-xl bg-white dark:bg-neutral-900 p-5 shadow-sm border border-transparent dark:border-neutral-800">
             <h3 className="mb-4 text-base font-extrabold text-slate-900 dark:text-white">
               You might also like
             </h3>
@@ -893,7 +893,7 @@ const CartPage = () => {
         )}
 
         {/* Delivery Address Card */}
-        <section className="mt-4 rounded-[24px] bg-white dark:bg-neutral-900 p-5 shadow-sm border border-transparent dark:border-neutral-800">
+        <section className="mt-4 rounded-xl bg-white dark:bg-neutral-900 p-5 shadow-sm border border-transparent dark:border-neutral-800">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <MapPin className="text-[#0c831f] dark:text-emerald-400" size={20} />
@@ -956,7 +956,7 @@ const CartPage = () => {
         </section>
 
         {/* Available Coupons Card */}
-        <section className="mt-4 rounded-[24px] bg-white dark:bg-neutral-900 p-5 shadow-sm border border-transparent dark:border-neutral-800">
+        <section className="mt-4 rounded-xl bg-white dark:bg-neutral-900 p-5 shadow-sm border border-transparent dark:border-neutral-800">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Tag className="text-[#0c831f] dark:text-emerald-400" size={20} />
@@ -998,7 +998,7 @@ const CartPage = () => {
         </section>
 
         {/* Bill Details Section */}
-        <section className="mt-4 rounded-[24px] bg-white dark:bg-neutral-900 p-4 shadow-sm border border-slate-100 dark:border-neutral-800">
+        <section className="mt-4 rounded-xl bg-white dark:bg-neutral-900 p-4 shadow-sm border border-slate-100 dark:border-neutral-800">
           <h3 className="text-[14px] font-extrabold text-slate-900 dark:text-white mb-4">
             Bill details
           </h3>
@@ -1117,7 +1117,7 @@ const CartPage = () => {
         </section>
 
         {/* Tip for Partner */}
-        <section className="mt-4 rounded-[24px] bg-white dark:bg-neutral-900 p-5 shadow-sm border border-transparent dark:border-neutral-800">
+        <section className="mt-4 rounded-xl bg-white dark:bg-neutral-900 p-5 shadow-sm border border-transparent dark:border-neutral-800">
           <div className="bg-gradient-to-r from-pink-50 to-purple-50 dark:from-neutral-850 dark:to-neutral-900/60 rounded-[20px] p-4 border border-pink-100/50 dark:border-neutral-800/40">
             <div className="flex items-center gap-2 mb-3">
               <Heart size={18} className="text-pink-500 fill-pink-500" />
@@ -1172,7 +1172,7 @@ const CartPage = () => {
         </section>
 
         {/* Ordering for someone else card */}
-        <section className="mt-4 rounded-[24px] bg-white dark:bg-neutral-900 p-5 shadow-sm border border-transparent dark:border-neutral-800">
+        <section className="mt-4 rounded-xl bg-white dark:bg-neutral-900 p-5 shadow-sm border border-transparent dark:border-neutral-800">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-extrabold text-slate-900 dark:text-white text-sm">
@@ -1208,7 +1208,7 @@ const CartPage = () => {
         </section>
 
 
-        <section className="mt-4 rounded-[24px] bg-white dark:bg-neutral-900 p-5 shadow-sm border border-transparent dark:border-neutral-800">
+        <section className="mt-4 rounded-xl bg-white dark:bg-neutral-900 p-5 shadow-sm border border-transparent dark:border-neutral-800">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
@@ -1275,16 +1275,28 @@ const CartPage = () => {
 
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-[520] border-t border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 py-4 shadow-[0_-8px_24px_rgba(15,23,42,0.08)] pb-[calc(1rem+env(safe-area-inset-bottom))]">
+      <div className="fixed bottom-0 left-0 right-0 z-[520] bg-white dark:bg-neutral-900 px-4 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
         <div className="mx-auto max-w-3xl">
-          <Button
+          <button
             onClick={handlePlaceOrder}
             disabled={isPlacingOrder}
-            className="h-12 w-full rounded-2xl bg-[#0c831f] dark:bg-emerald-600 px-4 text-sm font-extrabold text-white hover:bg-[#0b721b] dark:hover:bg-emerald-700 cursor-pointer flex items-center justify-center"
+            className="w-full bg-[#0c831f] text-white rounded-xl px-4 py-3 flex justify-between items-center shadow-sm active:scale-[0.98] transition-transform disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            <ShoppingBag size={18} className="mr-2" />
-            {isPlacingOrder ? "Placing Order..." : `Place Order | \u20B9${grandTotal}`}
-          </Button>
+            {isPlacingOrder ? (
+              <div className="flex justify-center w-full font-bold text-sm tracking-wide">Placing Order...</div>
+            ) : (
+              <>
+                <div className="flex flex-col text-left">
+                  <span className="font-extrabold text-sm leading-none">{"\u20B9"}{grandTotal}</span>
+                  <span className="text-[10px] font-bold text-emerald-100 mt-0.5 tracking-wider">TOTAL</span>
+                </div>
+                <div className="flex items-center font-bold text-sm tracking-wide">
+                  <span>{isAuthenticated ? "Proceed to Pay" : "Login to Proceed"}</span>
+                  <ChevronRight size={18} className="ml-1 opacity-90 stroke-[2.5]" />
+                </div>
+              </>
+            )}
+          </button>
         </div>
       </div>
 
@@ -1295,7 +1307,7 @@ const CartPage = () => {
             className="absolute inset-0 bg-black/45 backdrop-blur-sm animate-fade-in"
             onClick={() => setIsCouponModalOpen(false)}
           />
-          <div className="relative z-[610] w-full max-w-md rounded-[28px] bg-white dark:bg-neutral-900 p-6 shadow-2xl border border-transparent dark:border-neutral-800 max-h-[80vh] overflow-y-auto animate-slide-up">
+          <div className="relative z-[610] w-full max-w-md rounded-2xl bg-white dark:bg-neutral-900 p-6 shadow-2xl border border-transparent dark:border-neutral-800 max-h-[80vh] overflow-y-auto animate-slide-up">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                 Apply Coupon
@@ -1349,7 +1361,7 @@ const CartPage = () => {
             className="absolute inset-0 bg-black/45 backdrop-blur-sm animate-fade-in"
             onClick={() => setIsAddressModalOpen(false)}
           />
-          <div className="relative z-[610] w-full max-w-md rounded-[28px] bg-white dark:bg-neutral-900 p-6 shadow-2xl border border-transparent dark:border-neutral-800 max-h-[80vh] overflow-y-auto animate-slide-up">
+          <div className="relative z-[610] w-full max-w-md rounded-2xl bg-white dark:bg-neutral-900 p-6 shadow-2xl border border-transparent dark:border-neutral-800 max-h-[80vh] overflow-y-auto animate-slide-up">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                 Select Delivery Address
@@ -1411,7 +1423,7 @@ const CartPage = () => {
             className="absolute inset-0 bg-black/45 backdrop-blur-sm animate-fade-in"
             onClick={() => setIsSomeoneElseModalOpen(false)}
           />
-          <div className="relative z-[610] w-full max-w-md rounded-[28px] bg-white dark:bg-neutral-900 p-6 shadow-2xl border border-transparent dark:border-neutral-800 animate-slide-up">
+          <div className="relative z-[610] w-full max-w-md rounded-2xl bg-white dark:bg-neutral-900 p-6 shadow-2xl border border-transparent dark:border-neutral-800 animate-slide-up">
             {/* Top round Close Button outside */}
             <button
               onClick={() => setIsSomeoneElseModalOpen(false)}

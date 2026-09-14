@@ -57,18 +57,113 @@ const CategoryRail = memo(({
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         <div 
-          className="flex-shrink-0 flex flex-col items-center gap-2 cursor-pointer group"
+          className="flex-shrink-0 flex flex-col items-center gap-2 cursor-pointer group perspective-[1000px]"
           onClick={() => navigate("/user/under-250")}
         >
-          <div 
-            className="w-[58px] h-[58px] sm:w-[68px] sm:h-[68px] rounded-2xl flex flex-col items-center justify-center p-1 shadow-sm transition-transform group-hover:scale-105 group-active:scale-95"
-            style={{ backgroundColor: FOOD_VEG_COLOR }}
-          >
-            <span className="text-[10px] font-bold text-white/90">UNDER</span>
-            <span className="text-sm sm:text-base font-black text-white">₹200</span>
-            <div className="mt-1 px-2 py-0.5 bg-white rounded-full">
-              <span className="text-[8px] font-extrabold" style={{ color: FOOD_VEG_COLOR }}>Explore</span>
+          <style>
+            {`
+              @keyframes pop-bounce {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.08); }
+              }
+              @keyframes confetti-burst {
+                0% {
+                  box-shadow: 
+                    0 0 0 0 #ff0a54, 0 0 0 0 #ff477e, 0 0 0 0 #ff7096, 
+                    0 0 0 0 #ff85a1, 0 0 0 0 #fbb1bd, 0 0 0 0 #f9bec7;
+                  opacity: 1;
+                }
+                100% {
+                  box-shadow: 
+                    -35px -35px 0 2px #ff0a54, 35px -35px 0 1px #ff477e, -40px 20px 0 2px #ff7096, 
+                    40px 25px 0 1px #ff85a1, 0px -45px 0 2px #fbb1bd, 0px 45px 0 1px #f9bec7;
+                  opacity: 0;
+                }
+              }
+              .party-popper-btn {
+                animation: pop-bounce 3s infinite ease-in-out;
+                position: relative;
+              }
+              .party-popper-btn::before, .party-popper-btn::after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                transform: translate(-50%, -50%);
+                z-index: -1;
+                animation: confetti-burst 1.5s infinite ease-out;
+              }
+              .party-popper-btn::after {
+                animation-delay: 0.75s;
+                width: 4px;
+                height: 4px;
+                animation-name: confetti-burst-alt;
+              }
+              @keyframes confetti-burst-alt {
+                0% {
+                  box-shadow: 
+                    0 0 0 0 #ffba08, 0 0 0 0 #faa307, 0 0 0 0 #f48c06, 
+                    0 0 0 0 #e85d04, 0 0 0 0 #dc2f02, 0 0 0 0 #d00000;
+                  opacity: 1;
+                }
+                100% {
+                  box-shadow: 
+                    30px 25px 0 1px #ffba08, -30px -30px 0 2px #faa307, 25px -40px 0 1px #f48c06, 
+                    -35px 35px 0 2px #e85d04, 45px 0px 0 1px #dc2f02, -45px 0px 0 2px #d00000;
+                  opacity: 0;
+                }
+              }
+              @keyframes zomato-flip {
+                0%, 35% { transform: rotateY(0deg); }
+                50%, 85% { transform: rotateY(180deg); }
+                100% { transform: rotateY(360deg); }
+              }
+              .zomato-flip-container {
+                transform-style: preserve-3d;
+                animation: zomato-flip 6s infinite cubic-bezier(0.4, 0, 0.2, 1);
+                width: 100%;
+                height: 100%;
+                position: relative;
+                border-radius: 9999px;
+              }
+              .zomato-flip-face {
+                backface-visibility: hidden;
+                -webkit-backface-visibility: hidden;
+                border-radius: 9999px;
+              }
+              .zomato-flip-back {
+                transform: rotateY(180deg);
+              }
+            `}
+          </style>
+          
+          {/* Outer container for confetti and bounce */}
+          <div className="w-[58px] h-[58px] sm:w-[68px] sm:h-[68px] rounded-full shadow-[0_4px_12px_rgba(233,30,99,0.35)] transition-transform group-active:scale-95 party-popper-btn z-10 p-0 border-2 border-white bg-white">
+            
+            {/* Inner container for 3D flip */}
+            <div className="zomato-flip-container">
+              {/* Front Face */}
+              <div 
+                className="absolute inset-0 w-full h-full flex flex-col items-center justify-center p-1 zomato-flip-face"
+                style={{ background: "linear-gradient(135deg, #FF3366 0%, #E91E63 100%)", boxShadow: "inset 0 -3px 6px rgba(0,0,0,0.15)" }}
+              >
+                <span className="text-[10px] font-extrabold text-pink-100 tracking-wide leading-none mt-1 uppercase">Under</span>
+                <span className="text-[17px] sm:text-[20px] font-black text-white leading-tight drop-shadow-sm mt-0.5">₹200</span>
+              </div>
+
+              {/* Back Face */}
+              <div 
+                className="absolute inset-0 w-full h-full flex flex-col items-center justify-center p-1 zomato-flip-face zomato-flip-back"
+                style={{ background: "linear-gradient(135deg, #448DF9 0%, #1D4ED8 100%)", boxShadow: "inset 0 -3px 6px rgba(0,0,0,0.15)" }}
+              >
+                <span className="text-[10px] font-extrabold text-blue-100 uppercase mb-0.5 leading-none mt-0.5">Top</span>
+                <span className="text-[15px] sm:text-[17px] font-black text-white leading-none drop-shadow-sm uppercase">Offers</span>
+              </div>
             </div>
+
           </div>
           <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">Offers</span>
         </div>

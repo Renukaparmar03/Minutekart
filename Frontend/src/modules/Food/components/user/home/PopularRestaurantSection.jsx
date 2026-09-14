@@ -9,17 +9,47 @@ const PopularRestaurantSection = memo(({ popularRestaurants }) => {
 
   return (
     <motion.section
-      className="content-auto py-4 px-4 bg-white dark:bg-[#0a0a0a]"
+      className="content-auto pt-1 pb-4 px-4 bg-white dark:bg-[#0a0a0a]"
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
       <div className="mb-4">
-        <span className="inline-flex items-center gap-1 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full mb-1.5 border border-red-100/50 dark:border-red-900/30">
-          🏆 Top 10 Restaurants
-        </span>
-        <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
-          Popular Restaurants
+        <style>
+          {`
+            @keyframes text-shimmer {
+              0% { background-position: -200% center; }
+              100% { background-position: 200% center; }
+            }
+            .animate-text-shimmer {
+              background: linear-gradient(
+                90deg, 
+                var(--color-foreground) 0%, 
+                #ef4444 25%, 
+                var(--color-foreground) 50%
+              );
+              background-size: 200% auto;
+              color: transparent;
+              -webkit-background-clip: text;
+              background-clip: text;
+              animation: text-shimmer 4s ease-in-out infinite;
+            }
+            .dark .animate-text-shimmer {
+              background: linear-gradient(
+                90deg, 
+                #f3f4f6 0%, 
+                #f87171 25%, 
+                #f3f4f6 50%
+              );
+              background-size: 200% auto;
+              color: transparent;
+              -webkit-background-clip: text;
+              background-clip: text;
+            }
+          `}
+        </style>
+        <h2 className="text-lg sm:text-xl font-bold tracking-tight animate-text-shimmer">
+          Top 10 Popular Restaurants
         </h2>
       </div>
 

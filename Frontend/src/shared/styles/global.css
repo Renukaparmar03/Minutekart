@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Nunito:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "leaflet/dist/leaflet.css";
@@ -7,7 +7,9 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  font-family: 'Poppins', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Open Sans', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-okra: 'Nunito', sans-serif;
+  --font-sans: 'Open Sans', sans-serif;
   --font-poppins: 'Poppins', sans-serif;
   --font-outfit: 'Outfit', sans-serif;
   line-height: 1.5;
@@ -101,6 +103,8 @@
   --color-primary-orange: #cc2532;
   --font-poppins: var(--font-poppins);
   --font-outfit: var(--font-outfit);
+  --font-okra: var(--font-okra);
+  --font-sans: var(--font-sans);
 }
 
 .dark {
@@ -137,8 +141,14 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground m-0 min-h-screen;
+    @apply bg-background text-foreground m-0 min-h-screen font-sans;
   }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-okra);
+  }
+  h1 { @apply font-black; }
+  h2 { @apply font-bold; }
+  h3 { @apply font-semibold; }
 }
 
 @layer utilities {

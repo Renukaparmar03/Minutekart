@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo, Fragment } from "react"
 import { createPortal } from "react-dom"
 import { Link, useNavigate } from "react-router-dom"
-import { Plus, Minus, ArrowLeft, ChevronRight, Clock, MapPin, Phone, FileText, Utensils, Tag, Percent, Share2, ChevronUp, ChevronDown, X, Check, Settings, CreditCard, Wallet, Building2, Sparkles, Banknote, Zap, CheckCircle2, MessageCircle, Send, Mail, Copy } from "lucide-react"
+import { Plus, Minus, ArrowLeft, ChevronLeft, ChevronRight, Clock, MapPin, Phone, FileText, Utensils, Tag, Percent, Share2, ChevronUp, ChevronDown, X, Check, Settings, CreditCard, Wallet, Building2, Sparkles, Banknote, Zap, CheckCircle2, MessageCircle, Send, Mail, Copy } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import confetti from "canvas-confetti"
 
@@ -262,7 +262,7 @@ export default function Cart() {
   })
   const [sendCutlery, setSendCutlery] = useState(true)
   const [isPlacingOrder, setIsPlacingOrder] = useState(false)
-  const [showBillDetails, setShowBillDetails] = useState(true)
+  const [showBillDetails, setShowBillDetails] = useState(false)
   const [showPlacingOrder, setShowPlacingOrder] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [isScheduled, setIsScheduled] = useState(false)
@@ -1391,12 +1391,20 @@ export default function Cart() {
       try {
         const items = cart.map(mapOrderItem)
 
-        const response = await orderAPI.calculateOrder({
-          items,
-          restaurantId: restaurantData?.restaurantId || restaurantData?._id || restaurantId || null,
-          address: defaultAddress,
-          couponCode: coupon.code
-        })
+        const payload = {
+          orderType: "food",
+          items
+        }
+        const rId = restaurantData?.restaurantId || restaurantData?._id || restaurantId;
+        if (rId) payload.restaurantId = rId;
+        if (defaultAddress) payload.address = defaultAddress;
+        if (coupon.code) payload.couponCode = coupon.code;
+        if (isCustomCake) {
+           payload.isCustomCake = true;
+           payload.customCakeRequestId = customCakeItem?.customCakeRequestId;
+        }
+
+        const response = await orderAPI.calculateOrder(payload)
 
         const pricingData = response?.data?.data?.pricing
         if (!pricingData || !pricingData.appliedCoupon) {
@@ -1441,12 +1449,20 @@ export default function Cart() {
     try {
       const items = cart.map(mapOrderItem)
 
-      const response = await orderAPI.calculateOrder({
-        items,
-        restaurantId: restaurantData?.restaurantId || restaurantData?._id || restaurantId || null,
-        address: defaultAddress,
-        couponCode: inputCode
-      })
+      const payload = {
+        orderType: "food",
+        items
+      }
+      const rId = restaurantData?.restaurantId || restaurantData?._id || restaurantId;
+      if (rId) payload.restaurantId = rId;
+      if (defaultAddress) payload.address = defaultAddress;
+      if (inputCode) payload.couponCode = inputCode;
+      if (isCustomCake) {
+         payload.isCustomCake = true;
+         payload.customCakeRequestId = customCakeItem?.customCakeRequestId;
+      }
+
+      const response = await orderAPI.calculateOrder(payload)
 
       const pricingData = response?.data?.data?.pricing
       if (!pricingData) {
@@ -1489,12 +1505,19 @@ export default function Cart() {
       try {
         const items = cart.map(mapOrderItem)
 
-        const response = await orderAPI.calculateOrder({
-          items,
-          restaurantId: restaurantData?.restaurantId || restaurantData?._id || restaurantId || null,
-          address: defaultAddress,
-          couponCode: null
-        })
+        const payload = {
+          orderType: "food",
+          items
+        }
+        const rId = restaurantData?.restaurantId || restaurantData?._id || restaurantId;
+        if (rId) payload.restaurantId = rId;
+        if (defaultAddress) payload.address = defaultAddress;
+        if (isCustomCake) {
+           payload.isCustomCake = true;
+           payload.customCakeRequestId = customCakeItem?.customCakeRequestId;
+        }
+
+        const response = await orderAPI.calculateOrder(payload)
 
         if (response?.data?.success && response?.data?.data?.pricing) {
           setPricing(response.data.data.pricing)
@@ -2074,17 +2097,15 @@ export default function Cart() {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="h-8 w-8 flex-shrink-0 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 -ml-1"
                 onClick={handleBack}
               >
-                <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
+                <ChevronLeft className="h-6 w-6" />
               </Button>
-              <div className="min-w-0">
-                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">{restaurantName}</p>
-                <p className="text-sm md:text-base font-medium text-gray-800 dark:text-white truncate">
-                  {restaurantData?.estimatedDeliveryTime || "10-15 mins"} to <span className="font-semibold">Location</span>
-                  <span className="text-gray-400 dark:text-gray-500 ml-1 text-xs md:text-sm">{defaultAddress ? (formatFullAddress(defaultAddress) || defaultAddress?.formattedAddress || defaultAddress?.address || defaultAddress?.city || "Select address") : "Select address"}</span>
-                </p>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-[17px] md:text-xl font-bold text-[#1c1c1c] dark:text-white truncate" style={{ fontFamily: 'var(--font-okra)' }}>
+                  {restaurantName}
+                </h1>
               </div>
             </div>
             <Button
@@ -2101,21 +2122,139 @@ export default function Cart() {
 
       {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden pb-40 md:pb-44">
-        {/* Savings Banner */}
-        {savings > 0 && (
-          <div className="bg-blue-100 dark:bg-blue-900/20 px-4 md:px-6 py-2 md:py-3 flex-shrink-0">
-            <div className="max-w-7xl mx-auto">
-              <p className="text-sm md:text-base font-medium text-blue-800 dark:text-blue-200">
-                Saved {RUPEE_SYMBOL}{savings} on this order
-              </p>
-            </div>
-          </div>
-        )}
-
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-6">
           <div className="max-w-3xl mx-auto">
             {/* Main Cart Content */}
             <div className="space-y-2 md:space-y-4">
+              {/* Savings Banner */}
+              {(savings > 0 || deliveryFee === 0) && (
+                <div className="bg-[#eff4ff] dark:bg-blue-900/20 px-4 md:px-6 py-3 flex items-center gap-2 rounded-xl">
+                  <span className="text-base leading-none">🎉</span>
+                  <span className="text-[13px] font-bold text-[#1f4991] dark:text-blue-400">
+                    You saved {RUPEE_SYMBOL}{Math.max(savings, deliveryFee === 0 ? (feeSettings.deliveryFee || 25) : 0).toFixed(0)} on this order
+                  </span>
+                </div>
+              )}
+
+              {/* Coupon Section */}
+              <div className="bg-[#fff6f0] dark:bg-[#f97316]/10 rounded-2xl md:rounded-3xl overflow-hidden shadow-sm flex flex-col relative z-10 p-4 md:p-5">
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className="text-[13px] font-bold text-gray-800 dark:text-gray-200">Special offer for you</h4>
+                  <span className="text-base leading-none">🎁</span>
+                </div>
+                
+                {/* Applied Coupon View */}
+                {appliedCoupon ? (
+                  <div className="flex items-start justify-between w-full">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-red-100 shrink-0 shadow-sm">
+                        <Percent className="h-5 w-5 text-[#DC021B]" />
+                      </div>
+                      <div className="flex-1 pt-0.5">
+                        <p className="text-[13px] font-bold text-gray-900 dark:text-white leading-tight">'{appliedCoupon.code}' applied</p>
+                        <p className="text-[11px] text-[#1f4991] dark:text-blue-400 font-medium mt-0.5">You saved {RUPEE_SYMBOL}{discount}</p>
+                      </div>
+                    </div>
+                    <button onClick={handleRemoveCoupon} className="border border-[#DC021B]/30 bg-[#DC021B]/5 text-[#DC021B] rounded-full px-3 py-1 text-[11px] font-bold tracking-wide shadow-sm flex items-center gap-1">
+                      ADDED <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : (
+                  /* Available / Input View */
+                  <div className="flex flex-col gap-3">
+                    {loadingCoupons ? (
+                      <p className="text-sm text-gray-500">Loading offers...</p>
+                    ) : availableCoupons.length > 0 ? (
+                      <div className="flex items-start justify-between w-full">
+                        <div className="flex items-start gap-3 flex-1">
+                          <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-red-100 shrink-0 shadow-sm mt-0.5">
+                            <Percent className="h-5 w-5 text-[#DC021B]" />
+                          </div>
+                          <div className="flex-1 pt-0.5">
+                            <p className="text-[13px] font-bold text-gray-900 dark:text-white leading-tight mb-0.5 pr-2">
+                              {availableCoupons[0].discountDisplay || `Save ${RUPEE_SYMBOL}${availableCoupons[0].discount}`} with '{availableCoupons[0].code}'
+                            </p>
+                            {availableCoupons[0].customerGroup === "new" ? (
+                              <p className="text-[11px] text-[#1f4991] dark:text-blue-400 font-medium">First-time users only</p>
+                            ) : subtotal < availableCoupons[0].minOrder ? (
+                              <p className="text-[11px] text-[#1f4991] dark:text-blue-400 font-medium">Add items worth {RUPEE_SYMBOL}{(availableCoupons[0].minOrder - subtotal).toFixed(0)} more to unlock</p>
+                            ) : null}
+
+                            {availableCoupons.length > 1 && (
+                              <button onClick={() => setShowCoupons(!showCoupons)} className="text-[11px] text-[#1f4991] dark:text-blue-400 hover:underline flex items-center mt-1.5 font-medium">
+                                View all offers <ChevronRight className="h-3 w-3 ml-0.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          className="border border-[#DC021B]/40 bg-white dark:bg-transparent text-[#DC021B] rounded-xl px-4 py-1.5 text-xs font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed ml-2 shadow-sm"
+                          onClick={() => handleApplyCoupon(availableCoupons[0])}
+                          disabled={subtotal < availableCoupons[0].minOrder || (availableCoupons[0].customerGroup === "new" && userOrderCount > 0)}
+                        >
+                          APPLY
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-gray-100 shrink-0 shadow-sm">
+                          <Percent className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <p className="text-[13px] font-bold text-gray-500">No offers available</p>
+                      </div>
+                    )}
+
+                    {/* Show All Coupons List */}
+                    {showCoupons && !appliedCoupon && availableCoupons.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-dashed border-gray-200 dark:border-gray-800 space-y-4">
+                        {/* Input for manual code */}
+                        <div className="flex flex-col sm:flex-row gap-2 mb-4">
+                          <input
+                            type="text"
+                            value={manualCouponCode}
+                            onChange={(e) => setManualCouponCode(e.target.value.toUpperCase())}
+                            placeholder="Enter coupon code"
+                            className="flex-1 h-9 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#0a0a0a] px-3 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-[#DC021B]"
+                          />
+                          <button
+                            className="bg-white dark:bg-[#1a1a1a] border border-[#DC021B] text-[#DC021B] rounded px-4 h-9 text-xs font-semibold uppercase hover:bg-orange-50 dark:hover:bg-orange-900/10"
+                            onClick={handleApplyCouponCode}
+                          >
+                            APPLY
+                          </button>
+                        </div>
+                        {availableCoupons.slice(1).map((coupon) => (
+                          <div key={coupon.code} className="flex items-start justify-between">
+                            <div className="flex items-start gap-3 flex-1">
+                              <Percent className="h-5 w-5 text-gray-700 dark:text-gray-300 mt-0.5 opacity-50" />
+                              <div className="flex-1">
+                                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 leading-tight mb-0.5">
+                                  {coupon.discountDisplay || `Save ${RUPEE_SYMBOL}${coupon.discount}`} with '{coupon.code}'
+                                </p>
+                                {coupon.customerGroup === "new" ? (
+                                  <p className="text-[11px] text-[#DC021B] mb-1">First-time users only</p>
+                                ) : subtotal < coupon.minOrder ? (
+                                  <p className="text-xs text-blue-600 font-medium mb-1 line-clamp-1">Add items worth {RUPEE_SYMBOL}{(coupon.minOrder - subtotal).toFixed(0)} more to unlock</p>
+                                ) : (
+                                  <p className="text-xs text-gray-500 mb-1 line-clamp-1">{coupon.description}</p>
+                                )}
+                              </div>
+                            </div>
+                            <button
+                              className="border border-gray-300 text-gray-600 dark:border-gray-600 dark:text-gray-400 rounded px-3 py-1.5 text-xs font-semibold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed ml-2"
+                              onClick={() => handleApplyCoupon(coupon)}
+                              disabled={subtotal < coupon.minOrder || (coupon.customerGroup === "new" && userOrderCount > 0)}
+                            >
+                              APPLY
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {/* Cart Items */}
               <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-4 md:py-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800">
                 <div className="space-y-3 md:space-y-4">
@@ -2175,16 +2314,124 @@ export default function Cart() {
                   ))}
                 </div>
 
-                {/* Add more items */}
-                {!cart.some(item => item.isCustomCake) && (
+                {/* Actions Carousel (Add more, Notes, Cutlery) */}
+                <div className="mt-4 md:mt-6 pb-2 -mx-4 px-4 md:-mx-6 md:px-6 flex overflow-x-auto gap-3 snap-x scrollbar-hide">
+                  {!cart.some(item => item.isCustomCake) && (
+                    <button
+                      onClick={handleBack}
+                      className="flex-shrink-0 snap-center flex items-center gap-2 px-4 py-2.5 bg-red-50 dark:bg-[#DC021B]/10 rounded-xl text-[#DC021B] hover:bg-red-100"
+                    >
+                      <Plus className="h-4 w-4 md:h-5 md:w-5" />
+                      <span className="text-sm font-semibold whitespace-nowrap">Add more items</span>
+                    </button>
+                  )}
+
                   <button
-                    onClick={handleBack}
-                    className="flex items-center gap-2 mt-4 md:mt-6 text-[#DC021B] dark:text-[#DC021B]"
+                    onClick={() => setShowNoteInput(!showNoteInput)}
+                    className="flex-shrink-0 snap-center flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#1a1a1a] rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                   >
-                    <Plus className="h-4 w-4 md:h-5 md:w-5" />
-                    <span className="text-sm md:text-base font-medium">Add more items</span>
+                    <FileText className="h-4 w-4 md:h-5 md:w-5" />
+                    <span className="whitespace-nowrap max-w-[150px] sm:max-w-[200px] truncate">{note || "Add a note for the delivery partner"}</span>
                   </button>
-                )}
+                  
+                  <button
+                    onClick={() => setShowRestaurantNoteInput(!showRestaurantNoteInput)}
+                    className="flex-shrink-0 snap-center flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#1a1a1a] rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
+                    <Utensils className="h-4 w-4 md:h-5 md:w-5" />
+                    <span className="whitespace-nowrap max-w-[150px] sm:max-w-[200px] truncate">{restaurantNote || "Add cooking instructions"}</span>
+                  </button>
+
+                  <button
+                    onClick={() => setSendCutlery(!sendCutlery)}
+                    className={`flex-shrink-0 snap-center flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium ${sendCutlery ? 'bg-white dark:bg-[#1a1a1a] text-gray-600 dark:text-gray-300' : 'bg-red-50 text-[#DC021B] dark:text-[#DC021B] dark:bg-[#DC021B]/10'}`}
+                  >
+                    <Utensils className="h-4 w-4 md:h-5 md:w-5" />
+                    <span className="whitespace-nowrap">
+                      {sendCutlery ? "Send cutlery" : "Don't send cutlery"}
+                    </span>
+                  </button>
+                </div>
+
+              </div>
+
+              {/* Instructions Accordion - Separate Section */}
+              <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 overflow-hidden">
+                <div className="flex border-b border-gray-100 dark:border-gray-800 relative">
+                  <button
+                    onClick={() => {
+                      setShowNoteInput(!showNoteInput);
+                      if (!showNoteInput) setShowRestaurantNoteInput(false);
+                    }}
+                    className={`flex-1 py-3 px-1 text-[11px] sm:text-xs md:text-sm font-semibold transition-colors flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 ${showNoteInput ? 'text-[#DC021B]' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                  >
+                    <FileText className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
+                    <span className="text-center leading-tight">Delivery instructions</span>
+                  </button>
+                  <div className="w-px bg-gray-100 dark:bg-gray-800"></div>
+                  <button
+                    onClick={() => {
+                      setShowRestaurantNoteInput(!showRestaurantNoteInput);
+                      if (!showRestaurantNoteInput) setShowNoteInput(false);
+                    }}
+                    className={`flex-1 py-3 px-1 text-[11px] sm:text-xs md:text-sm font-semibold transition-colors flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 ${showRestaurantNoteInput ? 'text-[#DC021B]' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                  >
+                    <Utensils className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
+                    <span className="text-center leading-tight">Restaurant instructions</span>
+                  </button>
+                  
+                  {/* Active tab indicator */}
+                  <div 
+                    className="absolute bottom-0 h-0.5 bg-[#DC021B] transition-all duration-300 ease-in-out" 
+                    style={{ 
+                      width: '50%', 
+                      left: showNoteInput ? '0%' : showRestaurantNoteInput ? '50%' : '0%',
+                      opacity: showNoteInput || showRestaurantNoteInput ? 1 : 0
+                    }} 
+                  />
+                </div>
+
+                {/* Delivery Note Input */}
+                <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showNoteInput ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}>
+                  <div className="p-4 bg-gray-50/50 dark:bg-[#0a0a0a]/50">
+                    <textarea
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      placeholder="Eg. Call when outside, ring bell once, leave at gate"
+                      className="w-full border border-gray-200 dark:border-gray-700 rounded-lg md:rounded-xl p-3 md:p-4 text-sm md:text-base resize-none h-20 md:h-24 focus:outline-none focus:border-[#DC021B] dark:focus:border-[#DC021B] bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-gray-100"
+                      maxLength={240}
+                    />
+                    <div className="mt-2 flex items-center justify-between gap-3">
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                        This note will be saved with the order.
+                      </p>
+                      <span className="text-[11px] text-gray-400 dark:text-gray-500 whitespace-nowrap">
+                        {note.length}/240
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Restaurant Note Input */}
+                <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showRestaurantNoteInput ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}>
+                  <div className="p-4 bg-gray-50/50 dark:bg-[#0a0a0a]/50">
+                    <textarea
+                      value={restaurantNote}
+                      onChange={(e) => setRestaurantNote(e.target.value)}
+                      placeholder="Eg. Make it spicy, less oil, etc."
+                      className="w-full border border-gray-200 dark:border-gray-700 rounded-lg md:rounded-xl p-3 md:p-4 text-sm md:text-base resize-none h-20 md:h-24 focus:outline-none focus:border-[#DC021B] dark:focus:border-[#DC021B] bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-gray-100"
+                      maxLength={240}
+                    />
+                    <div className="mt-2 flex items-center justify-between gap-3">
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                        This note will be sent to the restaurant.
+                      </p>
+                      <span className="text-[11px] text-gray-400 dark:text-gray-500 whitespace-nowrap">
+                        {restaurantNote.length}/240
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Delivery Time
@@ -2281,82 +2528,7 @@ export default function Cart() {
               */}
 
 
-              {/* Note & Cutlery */}
-              <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-4 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={() => setShowNoteInput(!showNoteInput)}
-                  className="flex-1 flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 border border-gray-200 dark:border-gray-700 rounded-lg md:rounded-xl text-sm md:text-base text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-                >
-                  <FileText className="h-4 w-4 md:h-5 md:w-5" />
-                  <span className="truncate">{note || "Add a note for the delivery partner"}</span>
-                </button>
-                <button
-                  onClick={() => setSendCutlery(!sendCutlery)}
-                  className={`flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 border rounded-lg md:rounded-xl text-sm md:text-base ${sendCutlery ? 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300' : 'border-[#DC021B] dark:border-[#DC021B]/50 text-[#DC021B] dark:text-[#DC021B] bg-[#FFF2EB] dark:bg-[#DC021B]/10'}`}
-                >
-                  <Utensils className="h-4 w-4 md:h-5 md:w-5" />
-                  <span className="whitespace-nowrap">
-                    {sendCutlery ? "Send cutlery" : "Don't send cutlery"}
-                  </span>
-                </button>
-              </div>
-              <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-4 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={() => setShowRestaurantNoteInput(!showRestaurantNoteInput)}
-                  className="flex-1 flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 border border-gray-200 dark:border-gray-700 rounded-lg md:rounded-xl text-sm md:text-base text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-                >
-                  <Utensils className="h-4 w-4 md:h-5 md:w-5" />
-                  <span className="truncate">{restaurantNote || "Add cooking instructions for restaurant"}</span>
-                </button>
-              </div>
 
-              {/* Note Input */}
-              {showNoteInput && (
-                <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-3 md:py-4 rounded-lg md:rounded-xl border border-slate-100 dark:border-gray-800">
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
-                    Delivery instructions
-                  </p>
-                  <textarea
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    placeholder="Eg. Call when outside, ring bell once, leave at gate"
-                    className="w-full border border-gray-200 dark:border-gray-700 rounded-lg md:rounded-xl p-3 md:p-4 text-sm md:text-base resize-none h-20 md:h-24 focus:outline-none focus:border-[#DC021B] dark:focus:border-[#DC021B] bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-gray-100"
-                    maxLength={240}
-                  />
-                  <div className="mt-2 flex items-center justify-between gap-3">
-                    <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                      This note will be saved with the order and will be visible to the delivery partner.
-                    </p>
-                    <span className="text-[11px] text-gray-400 dark:text-gray-500 whitespace-nowrap">
-                      {note.length}/240
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Restaurant Note Input */}
-              {showRestaurantNoteInput && (
-                <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-3 md:py-4 rounded-lg md:rounded-xl border border-slate-100 dark:border-gray-800">
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
-                    Restaurant instructions
-                  </p>
-                  <textarea
-                    value={restaurantNote}
-                    onChange={(e) => setRestaurantNote(e.target.value)}
-                    placeholder="Eg. Make it spicy, less oil, etc."
-                    className="w-full border border-gray-200 dark:border-gray-700 rounded-lg md:rounded-xl p-3 md:p-4 text-sm md:text-base resize-none h-20 md:h-24 focus:outline-none focus:border-[#DC021B] dark:focus:border-[#DC021B] bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-gray-100"
-                    maxLength={240}
-                  />
-                  <div className="mt-2 flex items-center justify-between gap-3">
-                    <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                      This note will be sent directly to the restaurant.
-                    </p>
-                    <span className="text-[11px] text-gray-400 dark:text-gray-500 whitespace-nowrap">
-                      {restaurantNote.length}/240
-                    </span>
-                  </div>
-                </div>
-              )}
 
               {/* Complete your meal section - Approved Addons */}
               {addons.length > 0 && !cart.some(item => item.isCustomCake) && (
@@ -2441,119 +2613,6 @@ export default function Cart() {
                   )}
                 </div>
               )}
-
-              {/* Coupon Section */}
-              <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl overflow-hidden border border-slate-100 dark:border-gray-800 shadow-sm flex flex-col">
-                {deliveryFee === 0 && (
-                  <div className="px-4 py-3 md:px-6 md:py-4 border-b border-dashed border-gray-200 dark:border-gray-800 flex items-center gap-3 bg-[#f4fcf7] dark:bg-green-900/10">
-                    <CheckCircle2 className="h-5 w-5 text-green-600 fill-green-600/20" />
-                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">You saved {RUPEE_SYMBOL}{feeSettings.deliveryFee || 25} on delivery</span>
-                  </div>
-                )}
-
-                {/* Applied Coupon View */}
-                {appliedCoupon ? (
-                  <div className="px-4 py-3 md:px-6 md:py-4 flex items-center justify-between">
-                    <div className="flex items-start gap-3">
-                      <Percent className="h-5 w-5 text-[#DC021B] mt-0.5" />
-                      <div>
-                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">'{appliedCoupon.code}' applied</p>
-                        <p className="text-xs text-[#DC021B] font-medium mt-0.5">You saved {RUPEE_SYMBOL}{discount}</p>
-                      </div>
-                    </div>
-                    <button onClick={handleRemoveCoupon} className="text-[#DC021B] text-xs font-semibold px-2 hover:underline">REMOVE</button>
-                  </div>
-                ) : (
-                  /* Available / Input View */
-                  <div className="px-4 py-3 md:px-6 md:py-4 flex flex-col gap-3">
-                    {loadingCoupons ? (
-                      <p className="text-sm text-gray-500">Loading offers...</p>
-                    ) : availableCoupons.length > 0 ? (
-                      <div className="flex items-start justify-between w-full">
-                        <div className="flex items-start gap-3 flex-1">
-                          <Percent className="h-5 w-5 text-gray-700 dark:text-gray-300 mt-0.5" />
-                          <div className="flex-1">
-                            <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 leading-tight mb-0.5">
-                              {availableCoupons[0].discountDisplay || `Save ${RUPEE_SYMBOL}${availableCoupons[0].discount}`} with '{availableCoupons[0].code}'
-                            </p>
-                            {availableCoupons[0].customerGroup === "new" ? (
-                              <p className="text-[11px] text-[#DC021B] mb-1">First-time users only</p>
-                            ) : subtotal < availableCoupons[0].minOrder ? (
-                              <p className="text-xs text-blue-600 font-medium mb-1">Add items worth {RUPEE_SYMBOL}{(availableCoupons[0].minOrder - subtotal).toFixed(0)} more to unlock</p>
-                            ) : null}
-
-                            {availableCoupons.length > 1 && (
-                              <button onClick={() => setShowCoupons(!showCoupons)} className="text-[11px] text-[#DC021B] hover:underline flex items-center mt-1">
-                                View all coupons <ChevronRight className="h-3 w-3 ml-0.5" />
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                        <button
-                          className="border border-[#DC021B] text-[#DC021B] dark:hover:bg-[#DC021B]/10 rounded px-3 py-1.5 text-xs font-semibold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed ml-2 shadow-sm"
-                          onClick={() => handleApplyCoupon(availableCoupons[0])}
-                          disabled={subtotal < availableCoupons[0].minOrder || (availableCoupons[0].customerGroup === "new" && userOrderCount > 0)}
-                        >
-                          APPLY
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-3">
-                        <Percent className="h-5 w-5 text-gray-400" />
-                        <p className="text-sm text-gray-500">No offers available</p>
-                      </div>
-                    )}
-
-                    {/* Show All Coupons List */}
-                    {showCoupons && !appliedCoupon && availableCoupons.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-dashed border-gray-200 dark:border-gray-800 space-y-4">
-                        {/* Input for manual code */}
-                        <div className="flex flex-col sm:flex-row gap-2 mb-4">
-                          <input
-                            type="text"
-                            value={manualCouponCode}
-                            onChange={(e) => setManualCouponCode(e.target.value.toUpperCase())}
-                            placeholder="Enter coupon code"
-                            className="flex-1 h-9 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#0a0a0a] px-3 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-[#DC021B]"
-                          />
-                          <button
-                            className="bg-white dark:bg-[#1a1a1a] border border-[#DC021B] text-[#DC021B] rounded px-4 h-9 text-xs font-semibold uppercase hover:bg-orange-50 dark:hover:bg-orange-900/10"
-                            onClick={handleApplyCouponCode}
-                          >
-                            APPLY
-                          </button>
-                        </div>
-                        {availableCoupons.slice(1).map((coupon) => (
-                          <div key={coupon.code} className="flex items-start justify-between">
-                            <div className="flex items-start gap-3 flex-1">
-                              <Percent className="h-5 w-5 text-gray-700 dark:text-gray-300 mt-0.5 opacity-50" />
-                              <div className="flex-1">
-                                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 leading-tight mb-0.5">
-                                  {coupon.discountDisplay || `Save ${RUPEE_SYMBOL}${coupon.discount}`} with '{coupon.code}'
-                                </p>
-                                {coupon.customerGroup === "new" ? (
-                                  <p className="text-[11px] text-[#DC021B] mb-1">First-time users only</p>
-                                ) : subtotal < coupon.minOrder ? (
-                                  <p className="text-xs text-blue-600 font-medium mb-1 line-clamp-1">Add items worth {RUPEE_SYMBOL}{(coupon.minOrder - subtotal).toFixed(0)} more to unlock</p>
-                                ) : (
-                                  <p className="text-xs text-gray-500 mb-1 line-clamp-1">{coupon.description}</p>
-                                )}
-                              </div>
-                            </div>
-                            <button
-                              className="border border-gray-300 text-gray-600 dark:border-gray-600 dark:text-gray-400 rounded px-3 py-1.5 text-xs font-semibold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed ml-2"
-                              onClick={() => handleApplyCoupon(coupon)}
-                              disabled={subtotal < coupon.minOrder || (coupon.customerGroup === "new" && userOrderCount > 0)}
-                            >
-                              APPLY
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
 
               {/* Delivery Address */}
               <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
@@ -2747,7 +2806,7 @@ export default function Cart() {
 {/* Bill Details */}
               <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
                 <button
-                  onClick={() => setShowBillDetails(!showBillDetails)}
+                  onClick={() => setShowBillDetails(true)}
                   className="flex items-center justify-between w-full"
                 >
                   <div className="flex items-center gap-3 md:gap-4">
@@ -2767,49 +2826,11 @@ export default function Cart() {
                           <span className="text-base font-bold text-gray-900 dark:text-white">{RUPEE_SYMBOL}{total.toFixed(2)}</span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Incl. taxes and charges</p>
+                      <p className="text-xs text-[#DC021B] font-medium mt-1 uppercase tracking-wider">View Bill Summary</p>
                     </div>
                   </div>
-                  <ChevronRight className={`h-5 w-5 text-gray-400 transition-transform ${showBillDetails ? 'rotate-90' : ''}`} />
+                  <ChevronRight className="h-5 w-5 text-gray-400" />
                 </button>
-
-                {showBillDetails && (
-                  <div className="mt-4 pt-4 border-t border-dashed border-gray-200 dark:border-gray-800 space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Item Total</span>
-                      <span className="text-gray-800 dark:text-gray-200 font-medium">{RUPEE_SYMBOL}{subtotal.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Delivery Fee</span>
-                      <span className={deliveryFee === 0 ? "text-[#DC021B] font-medium" : "text-gray-800 dark:text-gray-200 font-medium"}>
-                        {deliveryFee === 0 ? "FREE" : `${RUPEE_SYMBOL}${deliveryFee.toFixed(2)}`}
-                      </span>
-                    </div>
-                    {deliveryFeeBreakdownText && (
-                      <div className="text-[11px] text-gray-500 dark:text-gray-400 -mt-1.5 ml-1 border-l-2 border-gray-100 pl-2">
-                        {deliveryFeeBreakdownText}
-                      </div>
-                    )}
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Platform Fee</span>
-                      <span className="text-gray-800 dark:text-gray-200 font-medium">{RUPEE_SYMBOL}{platformFee.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">GST and Restaurant Charges</span>
-                      <span className="text-gray-800 dark:text-gray-200 font-medium">{RUPEE_SYMBOL}{gstCharges.toFixed(2)}</span>
-                    </div>
-                    {discount > 0 && (
-                      <div className="flex justify-between text-sm text-[#DC021B] font-medium">
-                        <span>Coupon Discount</span>
-                        <span>-{RUPEE_SYMBOL}{discount.toFixed(2)}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between text-base font-bold pt-3 mt-1 border-t border-gray-100 dark:border-gray-800 text-gray-900 dark:text-white">
-                      <span>To Pay</span>
-                      <span>{RUPEE_SYMBOL}{total.toFixed(2)}</span>
-                    </div>
-                  </div>
-                )}
               </div>
 
             </div>
@@ -3328,6 +3349,87 @@ export default function Cart() {
           stroke-dashoffset: 0;
         }
       `}</style>
+
+      {/* Bill Summary Bottom Sheet Modal */}
+      {typeof window !== "undefined" && showBillDetails &&
+        createPortal(
+          <AnimatePresence>
+            <motion.div
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[10020]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowBillDetails(false)}
+            />
+            <motion.div
+              className="fixed bottom-0 left-0 right-0 z-[10021] w-full max-w-3xl mx-auto"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button Floating */}
+              <div className="absolute -top-14 left-1/2 -translate-x-1/2 z-[10022]">
+                <button 
+                  onClick={() => setShowBillDetails(false)}
+                  className="bg-[#2a2a2a] text-white rounded-full p-2.5 hover:bg-black transition-colors shadow-xl"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              
+              <div className="bg-[#f5f5f5] dark:bg-[#121212] rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] overflow-hidden pb-[calc(1rem+env(safe-area-inset-bottom))]">
+                  <div className="px-5 pt-5 pb-4 bg-white dark:bg-[#1a1a1a]">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">Bill Summary</h3>
+                  </div>
+                  
+                  <div className="px-5 pt-4 pb-6 space-y-4 bg-white dark:bg-[#1a1a1a] mt-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">Item Total</span>
+                      <span className="text-gray-800 dark:text-gray-200 font-medium">{RUPEE_SYMBOL}{subtotal.toFixed(2)}</span>
+                    </div>
+                    
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">Delivery Fee</span>
+                      <span className={deliveryFee === 0 ? "text-[#DC021B] font-medium" : "text-gray-800 dark:text-gray-200 font-medium"}>
+                        {deliveryFee === 0 ? "FREE" : `${RUPEE_SYMBOL}${deliveryFee.toFixed(2)}`}
+                      </span>
+                    </div>
+                    
+                    {deliveryFeeBreakdownText && (
+                      <div className="text-[11px] text-gray-500 dark:text-gray-400 -mt-1.5 ml-1 border-l-2 border-gray-100 pl-2">
+                        {deliveryFeeBreakdownText}
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">Platform Fee</span>
+                      <span className="text-gray-800 dark:text-gray-200 font-medium">{RUPEE_SYMBOL}{platformFee.toFixed(2)}</span>
+                    </div>
+                    
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">GST and Restaurant Charges</span>
+                      <span className="text-gray-800 dark:text-gray-200 font-medium">{RUPEE_SYMBOL}{gstCharges.toFixed(2)}</span>
+                    </div>
+                    
+                    {discount > 0 && (
+                      <div className="flex justify-between text-sm text-[#DC021B] font-medium">
+                        <span>Coupon Discount</span>
+                        <span>-{RUPEE_SYMBOL}{discount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-between text-base font-bold pt-4 mt-2 border-t border-gray-100 dark:border-gray-800 text-gray-900 dark:text-white">
+                      <span>To Pay</span>
+                      <span>{RUPEE_SYMBOL}{total.toFixed(2)}</span>
+                    </div>
+                  </div>
+              </div>
+            </motion.div>
+          </AnimatePresence>,
+          document.body
+        )}
 
       {/* Share Modal */}
       {typeof window !== "undefined" &&
