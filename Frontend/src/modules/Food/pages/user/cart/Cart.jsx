@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo, Fragment } from "react"
 import { createPortal } from "react-dom"
 import { Link, useNavigate } from "react-router-dom"
-import { Plus, Minus, ArrowLeft, ChevronLeft, ChevronRight, Clock, MapPin, Phone, FileText, Utensils, Tag, Percent, Share2, ChevronUp, ChevronDown, X, Check, Settings, CreditCard, Wallet, Building2, Sparkles, Banknote, Zap, CheckCircle2, MessageCircle, Send, Mail, Copy } from "lucide-react"
+import { Plus, Minus, ArrowLeft, ChevronLeft, ChevronRight, Clock, MapPin, Phone, FileText, Utensils, Tag, Percent, Share2, ChevronUp, ChevronDown, X, Check, Settings, CreditCard, Wallet, Building2, Sparkles, Banknote, Zap, CheckCircle2, MessageCircle, Send, Mail, Copy, Heart } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import confetti from "canvas-confetti"
 
@@ -264,6 +264,15 @@ export default function Cart() {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false)
   const [showBillDetails, setShowBillDetails] = useState(false)
   const [showPlacingOrder, setShowPlacingOrder] = useState(false)
+  const [selectedTip, setSelectedTip] = useState(0)
+  const [customTip, setCustomTip] = useState("")
+  const tipAmounts = [
+    { value: 0, label: "No Tip" },
+    { value: 10, label: "₹10" },
+    { value: 20, label: "₹20" },
+    { value: 30, label: "₹30" },
+    { value: 50, label: "₹50" },
+  ]
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [isScheduled, setIsScheduled] = useState(false)
   
@@ -1168,8 +1177,8 @@ export default function Cart() {
   const gstCharges = pricing?.tax ?? Math.round(subtotal * (feeSettings.gstRate / 100))
   const discount = pricing?.discount ?? (appliedCoupon ? Math.min(appliedCoupon.discount, subtotal * 0.5) : 0)
   const totalBeforeDiscount = subtotal + deliveryFee + platformFee + gstCharges
-  const total = pricing?.total || (totalBeforeDiscount - discount)
-  const savings = pricing?.savings ?? Math.max(0, totalBeforeDiscount - total)
+  const total = (pricing?.total || (totalBeforeDiscount - discount)) + (selectedTip || 0)
+  const savings = pricing?.savings ?? Math.max(0, totalBeforeDiscount - (total - (selectedTip || 0)))
   const selectedPaymentLabel =
     selectedPaymentMethod === "wallet"
       ? "Wallet"
@@ -1575,6 +1584,8 @@ export default function Cart() {
         total,
         couponCode: appliedCoupon?.code || null
       };
+      
+      orderPricing.deliveryTip = selectedTip || 0;
 
       // Add couponCode if not present but coupon is applied
       if (!orderPricing.couponCode && appliedCoupon?.code) {
@@ -3388,6 +3399,58 @@ export default function Cart() {
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">Bill Summary</h3>
                   </div>
                   
+                  {/* Tip for Partner */}
+                  <div className="px-5 py-4 bg-white dark:bg-[#1a1a1a] mt-2">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Heart size={18} className="text-pink-500 fill-pink-500" />
+                      <h3 className="font-bold text-gray-800 dark:text-gray-200">
+                        Tip your delivery partner
+                      </h3>
+                    </div>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-3 -mt-1">
+                      100% of the tip goes to them
+                    </p>
+                    <div className="grid grid-cols-4 gap-2 mb-3">
+                      {tipAmounts.map((tip) => (
+                        <button
+                          key={tip.value}
+                          onClick={() => {
+                            setSelectedTip(tip.value);
+                            setCustomTip("");
+                          }}
+                          className={`py-2 rounded-xl border transition-all font-bold text-sm ${
+                            selectedTip === tip.value && !customTip
+                              ? "border-[#1f4991] bg-blue-50 text-[#1f4991] dark:bg-blue-900/40 dark:text-blue-400"
+                              : "border-gray-200 bg-white text-gray-700 hover:border-[#1f4991]/30 dark:border-gray-700 dark:bg-[#121212] dark:text-gray-300 dark:hover:border-gray-600"
+                          }`}>
+                          {tip.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min="1"
+                        placeholder="Enter custom tip amount (₹)"
+                        value={customTip}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^0-9]/g, "");
+                          setCustomTip(val);
+                          setSelectedTip(val ? Number(val) : 0);
+                        }}
+                        className="w-full h-10 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#121212] px-3 text-sm font-medium text-gray-800 dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-[#1f4991] dark:focus:border-blue-500 transition-colors"
+                      />
+                      {customTip && (
+                        <button
+                          onClick={() => { setCustomTip(""); setSelectedTip(0); }}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  
                   <div className="px-5 pt-4 pb-6 space-y-4 bg-white dark:bg-[#1a1a1a] mt-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600 dark:text-gray-400">Item Total</span>
@@ -3421,6 +3484,13 @@ export default function Cart() {
                       <div className="flex justify-between text-sm text-[#DC021B] font-medium">
                         <span>Coupon Discount</span>
                         <span>-{RUPEE_SYMBOL}{discount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    
+                    {selectedTip > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">Delivery Partner Tip</span>
+                        <span className="text-gray-800 dark:text-gray-200 font-medium">+{RUPEE_SYMBOL}{selectedTip.toFixed(2)}</span>
                       </div>
                     )}
                     

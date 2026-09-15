@@ -98,6 +98,7 @@ const pricingSchema = new mongoose.Schema(
         handlingFee: { type: Number, default: 0, min: 0 },
         deliveryFee: { type: Number, default: 0, min: 0 },
         platformFee: { type: Number, default: 0, min: 0 },
+        deliveryTip: { type: Number, default: 0, min: 0 },
         gstAmount: { type: Number, default: 0, min: 0 },
         gst: { type: Number, default: 0, min: 0 },
         restaurantCommission: { type: Number, default: 0, min: 0 },

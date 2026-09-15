@@ -41,6 +41,7 @@ const pricingSchema = z.object({
     packagingFee: z.number().min(0).optional(),
     deliveryFee: z.number().min(0).optional(),
     platformFee: z.number().min(0).optional(),
+    deliveryTip: z.number().min(0).optional(),
     discount: z.number().min(0).optional(),
     total: z.number().min(0),
     currency: z.string().optional()
