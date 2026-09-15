@@ -1,6 +1,7 @@
 import React, { memo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Trophy } from "lucide-react";
 import { getRestaurantAvailabilityStatus } from "@food/utils/restaurantAvailability";
 import OptimizedImage from "@food/components/OptimizedImage";
 
@@ -14,7 +15,7 @@ const PopularRestaurantSection = memo(({ popularRestaurants }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <div className="mb-4">
+      <div className="mb-4 flex items-center gap-1.5">
         <style>
           {`
             @keyframes text-shimmer {
@@ -51,6 +52,7 @@ const PopularRestaurantSection = memo(({ popularRestaurants }) => {
         <h2 className="text-lg sm:text-xl font-bold tracking-tight animate-text-shimmer">
           Top 10 Popular Restaurants
         </h2>
+        <Trophy className="h-5 w-5 text-yellow-500 fill-yellow-500" />
       </div>
 
       <div className="flex gap-2 overflow-x-auto -mx-4 px-4 scrollbar-hide pb-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
@@ -105,7 +107,7 @@ const PopularRestaurantSection = memo(({ popularRestaurants }) => {
               </Link>
               
               <div className="flex flex-col gap-0.5 mt-1.5 w-full">
-                <span className="text-xs font-bold text-gray-800 dark:text-neutral-200 truncate px-0.5 leading-tight group-hover:text-red-500 transition-colors">
+                <span className="text-xs font-extrabold text-gray-800 dark:text-neutral-200 truncate px-0.5 leading-tight group-hover:text-red-500 transition-colors">
                   {restaurant.restaurantName || restaurant.name}
                 </span>
                 <span className="text-[10px] text-gray-500 dark:text-neutral-400 font-medium">

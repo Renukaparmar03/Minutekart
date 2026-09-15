@@ -203,7 +203,7 @@ const RestaurantCard = ({
 
       <div className="p-3 sm:p-4">
         <div className="flex justify-between items-start gap-2 mb-1.5">
-          <h3 className="text-[15px] sm:text-[17px] font-bold text-gray-900 line-clamp-1 group-hover:text-primary-orange transition-colors duration-200 flex-1 tracking-tight">
+          <h3 className="text-[15px] sm:text-[17px] font-extrabold text-gray-900 line-clamp-1 group-hover:text-primary-orange transition-colors duration-200 flex-1 tracking-tight">
             {restaurant.name}
           </h3>
           <div className="flex items-center gap-1 bg-green-600 text-white px-1.5 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold shadow-sm flex-shrink-0">

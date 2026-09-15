@@ -278,6 +278,7 @@ export default function Cart() {
   const [scheduledDate, setScheduledDate] = useState("")
   const [scheduledTime, setScheduledTime] = useState("")
   const [orderProgress, setOrderProgress] = useState(0)
+  const [addressFilter, setAddressFilter] = useState("All")
   const [showOrderSuccess, setShowOrderSuccess] = useState(false)
   const [placedOrderId, setPlacedOrderId] = useState(null)
   const [placedOrderData, setPlacedOrderData] = useState(null)
@@ -2136,6 +2137,269 @@ export default function Cart() {
                 </div>
               )}
 
+              {/* Cart Items */}
+              <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-4 md:py-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800">
+                <div className="space-y-3 md:space-y-4">
+                  {cart.map((item) => (
+                    <div key={item.id} className="flex min-w-0 items-start gap-2 md:gap-4">
+                      {/* Veg/Non-veg indicator */}
+                      <div className={`w-4 h-4 md:w-5 md:h-5 border-2 ${item.isVeg !== false ? 'border-green-600' : 'border-red-600'} flex items-center justify-center mt-1 flex-shrink-0`}>
+                        <div className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full ${item.isVeg !== false ? 'bg-green-600' : 'bg-red-600'}`} />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm md:text-base font-medium text-gray-800 dark:text-gray-200 leading-tight">{item.name}</p>
+                        {item.variantName ? (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{item.variantName}</p>
+                        ) : null}
+                      </div>
+
+                      <div className="flex shrink-0 items-center gap-2 md:gap-4">
+                        {/* Quantity controls */}
+                        {item.isCustomCake ? (
+                          <div className="flex items-center border border-red-500 rounded">
+                            <button
+                              className="px-2 md:px-3 py-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20"
+                              onClick={() => updateQuantity(item.id, 0)}
+                            >
+                              <X className="h-3 w-3 md:h-4 md:w-4" />
+                            </button>
+                            <span className="px-2 md:px-3 text-sm md:text-base font-semibold text-red-500 min-w-[20px] md:min-w-[24px] text-center">
+                              {item.quantity}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center border border-[#DC021B] dark:border-[#DC021B]/50 rounded">
+                            <button
+                              className="px-2 md:px-3 py-1 text-[#DC021B] dark:text-[#DC021B] hover:bg-orange-50 dark:hover:bg-[#DC021B]/10"
+                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            >
+                              <Minus className="h-3 w-3 md:h-4 md:w-4" />
+                            </button>
+                            <span className="px-2 md:px-3 text-sm md:text-base font-semibold text-[#DC021B] dark:text-[#DC021B] min-w-[20px] md:min-w-[24px] text-center">
+                              {item.quantity}
+                            </span>
+                            <button
+                              className="px-2 md:px-3 py-1 text-[#DC021B] dark:text-[#DC021B] hover:bg-orange-50 dark:hover:bg-[#DC021B]/10"
+                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            >
+                              <Plus className="h-3 w-3 md:h-4 md:w-4" />
+                            </button>
+                          </div>
+                        )}
+
+                        <p className="text-sm md:text-base font-medium text-gray-800 dark:text-gray-200 min-w-[50px] md:min-w-[70px] text-right">
+                          {RUPEE_SYMBOL}{((item.price || 0) * (item.quantity || 1)).toFixed(0)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Actions Carousel (Add more, Notes, Cutlery) */}
+                <div className="mt-4 md:mt-6 pb-2 -mx-4 px-4 md:-mx-6 md:px-6 flex overflow-x-auto gap-3 snap-x scrollbar-hide">
+                  {!cart.some(item => item.isCustomCake) && (
+                    <button
+                      onClick={handleBack}
+                      className="flex-shrink-0 snap-center flex items-center gap-2 px-4 py-2.5 bg-red-50 dark:bg-[#DC021B]/10 rounded-xl text-[#DC021B] hover:bg-red-100"
+                    >
+                      <Plus className="h-4 w-4 md:h-5 md:w-5" />
+                      <span className="text-sm font-semibold whitespace-nowrap">Add more items</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => setShowNoteInput(!showNoteInput)}
+                    className="flex-shrink-0 snap-center flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#1a1a1a] rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
+                    <FileText className="h-4 w-4 md:h-5 md:w-5" />
+                    <span className="whitespace-nowrap max-w-[150px] sm:max-w-[200px] truncate">{note || "Add a note for the delivery partner"}</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => setShowRestaurantNoteInput(!showRestaurantNoteInput)}
+                    className="flex-shrink-0 snap-center flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#1a1a1a] rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
+                    <Utensils className="h-4 w-4 md:h-5 md:w-5" />
+                    <span className="whitespace-nowrap max-w-[150px] sm:max-w-[200px] truncate">{restaurantNote || "Add cooking instructions"}</span>
+                  </button>
+
+                  <button
+                    onClick={() => setSendCutlery(!sendCutlery)}
+                    className={`flex-shrink-0 snap-center flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium ${sendCutlery ? 'bg-white dark:bg-[#1a1a1a] text-gray-600 dark:text-gray-300' : 'bg-red-50 text-[#DC021B] dark:text-[#DC021B] dark:bg-[#DC021B]/10'}`}
+                  >
+                    <Utensils className="h-4 w-4 md:h-5 md:w-5" />
+                    <span className="whitespace-nowrap">
+                      {sendCutlery ? "Send cutlery" : "Don't send cutlery"}
+                    </span>
+                  </button>
+                </div>
+
+              </div>
+
+              {/* Complete your meal section - Approved Addons */}
+              {addons.length > 0 && !cart.some(item => item.isCustomCake) && (
+                <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
+                  <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+                    <div className="w-6 h-6 md:w-8 md:h-8 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
+                      <Sparkles className="h-4 w-4 md:h-5 md:w-5 text-[#DC021B]" />
+                    </div>
+                    <span className="text-sm md:text-base font-semibold text-gray-800 dark:text-gray-200">Complete your meal with</span>
+                  </div>
+                  {loadingAddons ? (
+                    <div className="flex gap-3 md:gap-4 overflow-x-auto pb-2 -mx-4 md:-mx-6 px-4 md:px-6 scrollbar-hide">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="flex-shrink-0 w-28 md:w-36 animate-pulse">
+                          <div className="w-full h-28 md:h-36 bg-gray-200 dark:bg-gray-700 rounded-lg md:rounded-xl" />
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mt-2" />
+                          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded mt-1 w-2/3" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex gap-3 md:gap-4 overflow-x-auto pb-2 -mx-4 md:-mx-6 px-4 md:px-6 scrollbar-hide">
+                      {addons.map((addon) => (
+                        <div key={addon.id} className="flex-shrink-0 w-28 md:w-36">
+                          <div className="relative bg-gray-100 dark:bg-gray-800 rounded-lg md:rounded-xl overflow-hidden">
+                            <img
+                              src={addon.image || (addon.images && addon.images[0]) || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop"}
+                              alt={addon.name}
+                              className="w-full h-28 md:h-36 object-cover rounded-lg md:rounded-xl"
+                              onError={(e) => {
+                                e.target.onerror = null
+                                e.target.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop"
+                              }}
+                            />
+                            <div className="absolute top-1 md:top-2 left-1 md:left-2">
+                              <div className="w-3.5 h-3.5 md:w-4 md:h-4 bg-white border border-green-600 flex items-center justify-center rounded">
+                                <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-green-600" />
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => {
+                                // Use restaurant info from existing cart items to ensure format consistency
+                                const cartRestaurantId = cart[0]?.restaurantId || restaurantId;
+                                const cartRestaurantName = cart[0]?.restaurant || restaurantName;
+
+                                if (!cartRestaurantId || !cartRestaurantName) {
+                                  debugError('? Cannot add addon: Missing restaurant information', {
+                                    cartRestaurantId,
+                                    cartRestaurantName,
+                                    restaurantId,
+                                    restaurantName,
+                                    cartItem: cart[0]
+                                  });
+                                  toast.error('Restaurant information is missing. Please refresh the page.');
+                                  return;
+                                }
+
+                                addToCart({
+                                  id: addon.id,
+                                  name: addon.name,
+                                  price: addon.price,
+                                  image: addon.image || (addon.images && addon.images[0]) || "",
+                                  description: addon.description || "",
+                                  isVeg: true,
+                                  restaurant: cartRestaurantName,
+                                  restaurantId: cartRestaurantId
+                                });
+                              }}
+                              className="absolute bottom-1 md:bottom-2 right-1 md:right-2 w-6 h-6 md:w-7 md:h-7 bg-white border border-[#DC021B] rounded flex items-center justify-center shadow-sm hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
+                            >
+                              <Plus className="h-3.5 w-3.5 md:h-4 md:w-4 text-[#DC021B]" />
+                            </button>
+                          </div>
+                          <p className="text-xs md:text-sm font-medium text-gray-800 dark:text-gray-200 mt-1.5 md:mt-2 line-clamp-2 leading-tight">{addon.name}</p>
+                          {addon.description && (
+                            <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1">{addon.description}</p>
+                          )}
+                          <p className="text-xs md:text-sm text-gray-800 dark:text-gray-200 font-semibold mt-0.5">{RUPEE_SYMBOL}{addon.price}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Instructions Accordion - Separate Section */}
+              <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 overflow-hidden">
+                <div className="flex border-b border-gray-100 dark:border-gray-800 relative">
+                  <button
+                    onClick={() => {
+                      setShowNoteInput(!showNoteInput);
+                      if (!showNoteInput) setShowRestaurantNoteInput(false);
+                    }}
+                    className={`flex-1 py-3 px-1 text-[11px] sm:text-xs md:text-sm font-semibold transition-colors flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 ${showNoteInput ? 'text-[#DC021B]' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                  >
+                    <FileText className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
+                    <span className="text-center leading-tight">Delivery instructions</span>
+                  </button>
+                  <div className="w-px bg-gray-100 dark:bg-gray-800"></div>
+                  <button
+                    onClick={() => {
+                      setShowRestaurantNoteInput(!showRestaurantNoteInput);
+                      if (!showRestaurantNoteInput) setShowNoteInput(false);
+                    }}
+                    className={`flex-1 py-3 px-1 text-[11px] sm:text-xs md:text-sm font-semibold transition-colors flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 ${showRestaurantNoteInput ? 'text-[#DC021B]' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                  >
+                    <Utensils className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
+                    <span className="text-center leading-tight">Restaurant instructions</span>
+                  </button>
+                  
+                  {/* Active tab indicator */}
+                  <div 
+                    className="absolute bottom-0 h-0.5 bg-[#DC021B] transition-all duration-300 ease-in-out" 
+                    style={{ 
+                      width: '50%', 
+                      left: showNoteInput ? '0%' : showRestaurantNoteInput ? '50%' : '0%',
+                      opacity: showNoteInput || showRestaurantNoteInput ? 1 : 0
+                    }} 
+                  />
+                </div>
+
+                {/* Delivery Note Input */}
+                <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showNoteInput ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}>
+                  <div className="p-4 bg-gray-50/50 dark:bg-[#0a0a0a]/50">
+                    <textarea
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      placeholder="Eg. Call when outside, ring bell once, leave at gate"
+                      className="w-full border border-gray-200 dark:border-gray-700 rounded-lg md:rounded-xl p-3 md:p-4 text-sm md:text-base resize-none h-20 md:h-24 focus:outline-none focus:border-[#DC021B] dark:focus:border-[#DC021B] bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-gray-100"
+                      maxLength={240}
+                    />
+                    <div className="mt-2 flex items-center justify-between gap-3">
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                        This note will be saved with the order.
+                      </p>
+                      <span className="text-[11px] text-gray-400 dark:text-gray-500 whitespace-nowrap">
+                        {note.length}/240
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Restaurant Note Input */}
+                <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showRestaurantNoteInput ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}>
+                  <div className="p-4 bg-gray-50/50 dark:bg-[#0a0a0a]/50">
+                    <textarea
+                      value={restaurantNote}
+                      onChange={(e) => setRestaurantNote(e.target.value)}
+                      placeholder="Eg. Make it spicy, less oil, etc."
+                      className="w-full border border-gray-200 dark:border-gray-700 rounded-lg md:rounded-xl p-3 md:p-4 text-sm md:text-base resize-none h-20 md:h-24 focus:outline-none focus:border-[#DC021B] dark:focus:border-[#DC021B] bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-gray-100"
+                      maxLength={240}
+                    />
+                    <div className="mt-2 flex items-center justify-between gap-3">
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                        This note will be sent to the restaurant.
+                      </p>
+                      <span className="text-[11px] text-gray-400 dark:text-gray-500 whitespace-nowrap">
+                        {restaurantNote.length}/240
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Coupon Section */}
               <div className="bg-[#fff6f0] dark:bg-[#f97316]/10 rounded-2xl md:rounded-3xl overflow-hidden shadow-sm flex flex-col relative z-10 p-4 md:p-5">
                 <div className="flex justify-between items-center mb-3">
@@ -2255,185 +2519,6 @@ export default function Cart() {
                 )}
               </div>
 
-              {/* Cart Items */}
-              <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-4 md:py-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800">
-                <div className="space-y-3 md:space-y-4">
-                  {cart.map((item) => (
-                    <div key={item.id} className="flex min-w-0 items-start gap-2 md:gap-4">
-                      {/* Veg/Non-veg indicator */}
-                      <div className={`w-4 h-4 md:w-5 md:h-5 border-2 ${item.isVeg !== false ? 'border-green-600' : 'border-red-600'} flex items-center justify-center mt-1 flex-shrink-0`}>
-                        <div className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full ${item.isVeg !== false ? 'bg-green-600' : 'bg-red-600'}`} />
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm md:text-base font-medium text-gray-800 dark:text-gray-200 leading-tight">{item.name}</p>
-                        {item.variantName ? (
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{item.variantName}</p>
-                        ) : null}
-                      </div>
-
-                      <div className="flex shrink-0 items-center gap-2 md:gap-4">
-                        {/* Quantity controls */}
-                        {item.isCustomCake ? (
-                          <div className="flex items-center border border-red-500 rounded">
-                            <button
-                              className="px-2 md:px-3 py-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20"
-                              onClick={() => updateQuantity(item.id, 0)}
-                            >
-                              <X className="h-3 w-3 md:h-4 md:w-4" />
-                            </button>
-                            <span className="px-2 md:px-3 text-sm md:text-base font-semibold text-red-500 min-w-[20px] md:min-w-[24px] text-center">
-                              {item.quantity}
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center border border-[#DC021B] dark:border-[#DC021B]/50 rounded">
-                            <button
-                              className="px-2 md:px-3 py-1 text-[#DC021B] dark:text-[#DC021B] hover:bg-orange-50 dark:hover:bg-[#DC021B]/10"
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            >
-                              <Minus className="h-3 w-3 md:h-4 md:w-4" />
-                            </button>
-                            <span className="px-2 md:px-3 text-sm md:text-base font-semibold text-[#DC021B] dark:text-[#DC021B] min-w-[20px] md:min-w-[24px] text-center">
-                              {item.quantity}
-                            </span>
-                            <button
-                              className="px-2 md:px-3 py-1 text-[#DC021B] dark:text-[#DC021B] hover:bg-orange-50 dark:hover:bg-[#DC021B]/10"
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            >
-                              <Plus className="h-3 w-3 md:h-4 md:w-4" />
-                            </button>
-                          </div>
-                        )}
-
-                        <p className="text-sm md:text-base font-medium text-gray-800 dark:text-gray-200 min-w-[50px] md:min-w-[70px] text-right">
-                          {RUPEE_SYMBOL}{((item.price || 0) * (item.quantity || 1)).toFixed(0)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Actions Carousel (Add more, Notes, Cutlery) */}
-                <div className="mt-4 md:mt-6 pb-2 -mx-4 px-4 md:-mx-6 md:px-6 flex overflow-x-auto gap-3 snap-x scrollbar-hide">
-                  {!cart.some(item => item.isCustomCake) && (
-                    <button
-                      onClick={handleBack}
-                      className="flex-shrink-0 snap-center flex items-center gap-2 px-4 py-2.5 bg-red-50 dark:bg-[#DC021B]/10 rounded-xl text-[#DC021B] hover:bg-red-100"
-                    >
-                      <Plus className="h-4 w-4 md:h-5 md:w-5" />
-                      <span className="text-sm font-semibold whitespace-nowrap">Add more items</span>
-                    </button>
-                  )}
-
-                  <button
-                    onClick={() => setShowNoteInput(!showNoteInput)}
-                    className="flex-shrink-0 snap-center flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#1a1a1a] rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-                  >
-                    <FileText className="h-4 w-4 md:h-5 md:w-5" />
-                    <span className="whitespace-nowrap max-w-[150px] sm:max-w-[200px] truncate">{note || "Add a note for the delivery partner"}</span>
-                  </button>
-                  
-                  <button
-                    onClick={() => setShowRestaurantNoteInput(!showRestaurantNoteInput)}
-                    className="flex-shrink-0 snap-center flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#1a1a1a] rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-                  >
-                    <Utensils className="h-4 w-4 md:h-5 md:w-5" />
-                    <span className="whitespace-nowrap max-w-[150px] sm:max-w-[200px] truncate">{restaurantNote || "Add cooking instructions"}</span>
-                  </button>
-
-                  <button
-                    onClick={() => setSendCutlery(!sendCutlery)}
-                    className={`flex-shrink-0 snap-center flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium ${sendCutlery ? 'bg-white dark:bg-[#1a1a1a] text-gray-600 dark:text-gray-300' : 'bg-red-50 text-[#DC021B] dark:text-[#DC021B] dark:bg-[#DC021B]/10'}`}
-                  >
-                    <Utensils className="h-4 w-4 md:h-5 md:w-5" />
-                    <span className="whitespace-nowrap">
-                      {sendCutlery ? "Send cutlery" : "Don't send cutlery"}
-                    </span>
-                  </button>
-                </div>
-
-              </div>
-
-              {/* Instructions Accordion - Separate Section */}
-              <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 overflow-hidden">
-                <div className="flex border-b border-gray-100 dark:border-gray-800 relative">
-                  <button
-                    onClick={() => {
-                      setShowNoteInput(!showNoteInput);
-                      if (!showNoteInput) setShowRestaurantNoteInput(false);
-                    }}
-                    className={`flex-1 py-3 px-1 text-[11px] sm:text-xs md:text-sm font-semibold transition-colors flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 ${showNoteInput ? 'text-[#DC021B]' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-                  >
-                    <FileText className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
-                    <span className="text-center leading-tight">Delivery instructions</span>
-                  </button>
-                  <div className="w-px bg-gray-100 dark:bg-gray-800"></div>
-                  <button
-                    onClick={() => {
-                      setShowRestaurantNoteInput(!showRestaurantNoteInput);
-                      if (!showRestaurantNoteInput) setShowNoteInput(false);
-                    }}
-                    className={`flex-1 py-3 px-1 text-[11px] sm:text-xs md:text-sm font-semibold transition-colors flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 ${showRestaurantNoteInput ? 'text-[#DC021B]' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-                  >
-                    <Utensils className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
-                    <span className="text-center leading-tight">Restaurant instructions</span>
-                  </button>
-                  
-                  {/* Active tab indicator */}
-                  <div 
-                    className="absolute bottom-0 h-0.5 bg-[#DC021B] transition-all duration-300 ease-in-out" 
-                    style={{ 
-                      width: '50%', 
-                      left: showNoteInput ? '0%' : showRestaurantNoteInput ? '50%' : '0%',
-                      opacity: showNoteInput || showRestaurantNoteInput ? 1 : 0
-                    }} 
-                  />
-                </div>
-
-                {/* Delivery Note Input */}
-                <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showNoteInput ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}>
-                  <div className="p-4 bg-gray-50/50 dark:bg-[#0a0a0a]/50">
-                    <textarea
-                      value={note}
-                      onChange={(e) => setNote(e.target.value)}
-                      placeholder="Eg. Call when outside, ring bell once, leave at gate"
-                      className="w-full border border-gray-200 dark:border-gray-700 rounded-lg md:rounded-xl p-3 md:p-4 text-sm md:text-base resize-none h-20 md:h-24 focus:outline-none focus:border-[#DC021B] dark:focus:border-[#DC021B] bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-gray-100"
-                      maxLength={240}
-                    />
-                    <div className="mt-2 flex items-center justify-between gap-3">
-                      <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                        This note will be saved with the order.
-                      </p>
-                      <span className="text-[11px] text-gray-400 dark:text-gray-500 whitespace-nowrap">
-                        {note.length}/240
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Restaurant Note Input */}
-                <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showRestaurantNoteInput ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}>
-                  <div className="p-4 bg-gray-50/50 dark:bg-[#0a0a0a]/50">
-                    <textarea
-                      value={restaurantNote}
-                      onChange={(e) => setRestaurantNote(e.target.value)}
-                      placeholder="Eg. Make it spicy, less oil, etc."
-                      className="w-full border border-gray-200 dark:border-gray-700 rounded-lg md:rounded-xl p-3 md:p-4 text-sm md:text-base resize-none h-20 md:h-24 focus:outline-none focus:border-[#DC021B] dark:focus:border-[#DC021B] bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-gray-100"
-                      maxLength={240}
-                    />
-                    <div className="mt-2 flex items-center justify-between gap-3">
-                      <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                        This note will be sent to the restaurant.
-                      </p>
-                      <span className="text-[11px] text-gray-400 dark:text-gray-500 whitespace-nowrap">
-                        {restaurantNote.length}/240
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {/* Delivery Time
               <div className="relative overflow-hidden rounded-3xl border border-orange-200/80 bg-[linear-gradient(135deg,#fff7ed_0%,#ffffff_52%,#fef2f2_100%)] px-4 py-5 shadow-[0_16px_50px_rgba(235,89,14,0.12)] dark:border-orange-900/50 dark:bg-[linear-gradient(135deg,rgba(60,24,10,0.92)_0%,rgba(26,26,26,0.98)_48%,rgba(58,16,23,0.92)_100%)] md:px-6">
                 <div className="pointer-events-none absolute -right-12 -top-14 h-40 w-40 rounded-full bg-orange-200/50 blur-3xl dark:bg-orange-500/10" />
@@ -2530,90 +2615,6 @@ export default function Cart() {
 
 
 
-              {/* Complete your meal section - Approved Addons */}
-              {addons.length > 0 && !cart.some(item => item.isCustomCake) && (
-                <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
-                  <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
-                    <div className="w-6 h-6 md:w-8 md:h-8 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
-                      <Sparkles className="h-4 w-4 md:h-5 md:w-5 text-[#DC021B]" />
-                    </div>
-                    <span className="text-sm md:text-base font-semibold text-gray-800 dark:text-gray-200">Complete your meal with</span>
-                  </div>
-                  {loadingAddons ? (
-                    <div className="flex gap-3 md:gap-4 overflow-x-auto pb-2 -mx-4 md:-mx-6 px-4 md:px-6 scrollbar-hide">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex-shrink-0 w-28 md:w-36 animate-pulse">
-                          <div className="w-full h-28 md:h-36 bg-gray-200 dark:bg-gray-700 rounded-lg md:rounded-xl" />
-                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mt-2" />
-                          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded mt-1 w-2/3" />
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex gap-3 md:gap-4 overflow-x-auto pb-2 -mx-4 md:-mx-6 px-4 md:px-6 scrollbar-hide">
-                      {addons.map((addon) => (
-                        <div key={addon.id} className="flex-shrink-0 w-28 md:w-36">
-                          <div className="relative bg-gray-100 dark:bg-gray-800 rounded-lg md:rounded-xl overflow-hidden">
-                            <img
-                              src={addon.image || (addon.images && addon.images[0]) || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop"}
-                              alt={addon.name}
-                              className="w-full h-28 md:h-36 object-cover rounded-lg md:rounded-xl"
-                              onError={(e) => {
-                                e.target.onerror = null
-                                e.target.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop"
-                              }}
-                            />
-                            <div className="absolute top-1 md:top-2 left-1 md:left-2">
-                              <div className="w-3.5 h-3.5 md:w-4 md:h-4 bg-white border border-green-600 flex items-center justify-center rounded">
-                                <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-green-600" />
-                              </div>
-                            </div>
-                            <button
-                              onClick={() => {
-                                // Use restaurant info from existing cart items to ensure format consistency
-                                const cartRestaurantId = cart[0]?.restaurantId || restaurantId;
-                                const cartRestaurantName = cart[0]?.restaurant || restaurantName;
-
-                                if (!cartRestaurantId || !cartRestaurantName) {
-                                  debugError('? Cannot add addon: Missing restaurant information', {
-                                    cartRestaurantId,
-                                    cartRestaurantName,
-                                    restaurantId,
-                                    restaurantName,
-                                    cartItem: cart[0]
-                                  });
-                                  toast.error('Restaurant information is missing. Please refresh the page.');
-                                  return;
-                                }
-
-                                addToCart({
-                                  id: addon.id,
-                                  name: addon.name,
-                                  price: addon.price,
-                                  image: addon.image || (addon.images && addon.images[0]) || "",
-                                  description: addon.description || "",
-                                  isVeg: true,
-                                  restaurant: cartRestaurantName,
-                                  restaurantId: cartRestaurantId
-                                });
-                              }}
-                              className="absolute bottom-1 md:bottom-2 right-1 md:right-2 w-6 h-6 md:w-7 md:h-7 bg-white border border-[#DC021B] rounded flex items-center justify-center shadow-sm hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
-                            >
-                              <Plus className="h-3.5 w-3.5 md:h-4 md:w-4 text-[#DC021B]" />
-                            </button>
-                          </div>
-                          <p className="text-xs md:text-sm font-medium text-gray-800 dark:text-gray-200 mt-1.5 md:mt-2 line-clamp-2 leading-tight">{addon.name}</p>
-                          {addon.description && (
-                            <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1">{addon.description}</p>
-                          )}
-                          <p className="text-xs md:text-sm text-gray-800 dark:text-gray-200 font-semibold mt-0.5">{RUPEE_SYMBOL}{addon.price}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
               {/* Delivery Address */}
               <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
                 <div className="flex items-start justify-between w-full text-left">
@@ -2662,21 +2663,25 @@ export default function Cart() {
                         )}
                         {/* Address Selection Buttons */}
                         <div className="flex flex-wrap gap-2 mt-3">
-                          {["Home", "Work", "Other"].map((label) => {
-                            const normalizedLabel = normalizeAddressLabel(label)
-                            const addressExists = addresses.some(addr => normalizeAddressLabel(addr.label) === normalizedLabel)
+                          {["All", "Home", "Work", "Other"].map((label) => {
+                            const isAll = label === "All"
+                            const normalizedLabel = !isAll ? normalizeAddressLabel(label) : ""
+                            const addressExists = isAll ? addresses.length > 0 : addresses.some(addr => normalizeAddressLabel(addr.label) === normalizedLabel)
+                            const isFilterActive = addressFilter === label
                             return (
                               <button
                                 key={label}
                                 onClick={(e) => {
                                   e.preventDefault()
                                   e.stopPropagation()
-                                  handleSelectAddressByLabel(label)
+                                  setAddressFilter(label)
                                 }}
                                 disabled={!addressExists}
-                                className={`text-xs px-4 py-1.5 rounded-full font-semibold transition-all ${addressExists
-                                  ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300'
-                                  : 'bg-gray-50 text-gray-400 border border-gray-100 cursor-not-allowed dark:bg-gray-900'
+                                className={`text-xs px-4 py-1.5 rounded-full font-semibold transition-all ${!addressExists
+                                  ? 'bg-gray-50 text-gray-400 border border-gray-100 cursor-not-allowed dark:bg-gray-900'
+                                  : isFilterActive
+                                    ? 'bg-[#DC021B] text-white shadow-sm'
+                                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300'
                                   }`}
                               >
                                 {label}
@@ -2686,7 +2691,7 @@ export default function Cart() {
                         </div>
                         {addresses.length > 0 && (
                           <div className="mt-4 space-y-3">
-                            {addresses.map((address) => {
+                            {addresses.filter(address => addressFilter === "All" || normalizeAddressLabel(address.label) === normalizeAddressLabel(addressFilter)).map((address) => {
                               const addressId = getAddressId(address)
                               const isSelected = addressId && addressId === selectedAddressId
                               return (

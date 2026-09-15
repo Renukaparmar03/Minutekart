@@ -676,10 +676,10 @@ export default function Home() {
             <section className="px-4 py-4 space-y-3 bg-white dark:bg-[#0a0a0a]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
                     Meals under
                   </h2>
-                  <span className="flex items-center justify-center border-[1.5px] border-gray-900 dark:border-white rounded-full px-2 py-0.5 text-xs sm:text-sm font-black text-gray-900 dark:text-white leading-none">
+                  <span className="flex items-center justify-center border-[1.5px] border-gray-900 dark:border-white rounded-full px-2.5 py-0.5 text-sm sm:text-base font-black text-gray-900 dark:text-white leading-none">
                     ₹250
                   </span>
                 </div>
@@ -788,7 +788,7 @@ export default function Home() {
                         <div className="flex flex-col gap-1 min-w-0 mt-2.5">
                           {/* Restaurant */}
                           <div className="flex items-center min-w-0">
-                            <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold truncate">
+                            <span className="text-[10px] text-gray-500 dark:text-gray-400 font-extrabold truncate">
                               {dish.restaurant}
                             </span>
                           </div>
