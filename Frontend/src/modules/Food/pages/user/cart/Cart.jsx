@@ -203,7 +203,7 @@ export default function Cart() {
   const [appliedCoupon, setAppliedCoupon] = useState(null)
   const [couponCode, setCouponCode] = useState("")
   const [manualCouponCode, setManualCouponCode] = useState("")
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("cash")
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("razorpay")
   const [showPaymentSheet, setShowPaymentSheet] = useState(false)
   const [walletBalance, setWalletBalance] = useState(0)
   const [isLoadingWallet, setIsLoadingWallet] = useState(false)
@@ -278,7 +278,7 @@ export default function Cart() {
   const [scheduledDate, setScheduledDate] = useState("")
   const [scheduledTime, setScheduledTime] = useState("")
   const [orderProgress, setOrderProgress] = useState(0)
-  const [addressFilter, setAddressFilter] = useState("All")
+  const [addressFilter, setAddressFilter] = useState(null)
   const [showOrderSuccess, setShowOrderSuccess] = useState(false)
   const [placedOrderId, setPlacedOrderId] = useState(null)
   const [placedOrderData, setPlacedOrderData] = useState(null)
@@ -2663,10 +2663,9 @@ export default function Cart() {
                         )}
                         {/* Address Selection Buttons */}
                         <div className="flex flex-wrap gap-2 mt-3">
-                          {["All", "Home", "Work", "Other"].map((label) => {
-                            const isAll = label === "All"
-                            const normalizedLabel = !isAll ? normalizeAddressLabel(label) : ""
-                            const addressExists = isAll ? addresses.length > 0 : addresses.some(addr => normalizeAddressLabel(addr.label) === normalizedLabel)
+                          {["Home", "Work", "Other"].map((label) => {
+                            const normalizedLabel = normalizeAddressLabel(label)
+                            const addressExists = addresses.some(addr => normalizeAddressLabel(addr.label) === normalizedLabel)
                             const isFilterActive = addressFilter === label
                             return (
                               <button
@@ -2674,7 +2673,7 @@ export default function Cart() {
                                 onClick={(e) => {
                                   e.preventDefault()
                                   e.stopPropagation()
-                                  setAddressFilter(label)
+                                  setAddressFilter(isFilterActive ? null : label)
                                 }}
                                 disabled={!addressExists}
                                 className={`text-xs px-4 py-1.5 rounded-full font-semibold transition-all ${!addressExists
@@ -2689,9 +2688,9 @@ export default function Cart() {
                             )
                           })}
                         </div>
-                        {addresses.length > 0 && (
+                        {addresses.length > 0 && addressFilter && (
                           <div className="mt-4 space-y-3">
-                            {addresses.filter(address => addressFilter === "All" || normalizeAddressLabel(address.label) === normalizeAddressLabel(addressFilter)).map((address) => {
+                            {addresses.filter(address => normalizeAddressLabel(address.label) === normalizeAddressLabel(addressFilter)).map((address) => {
                               const addressId = getAddressId(address)
                               const isSelected = addressId && addressId === selectedAddressId
                               return (
